@@ -1891,7 +1891,7 @@ def main():
 	cur.execute(query)
 	'''
 
-	TOKEN = os.environ.get('BOT_TOKEN_RESISTENCIA', None)
+	TOKEN = os.environ.get('BOT_TOKEN', None)
 	updater = Updater(TOKEN, use_context=True)
 	
 	
