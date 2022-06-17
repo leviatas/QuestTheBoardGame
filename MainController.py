@@ -1964,7 +1964,7 @@ def main():
 	updater.start_webhook(listen="0.0.0.0",
 	      port=PORT,
 	      url_path=TOKEN,
-		  webhook_url="https://resistenciabot.herokuapp.com/" + TOKEN)
+		  webhook_url="https://questboardgamebot.herokuapp.com/" + TOKEN)
 	# Fin codigo con hooks
 
 
