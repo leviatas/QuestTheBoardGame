@@ -1,17 +1,31 @@
-playerSets = {    
+playerSets = {
+    4: {
+        "afiliacion": [
+            "Resistencia",
+            "Resistencia",
+            "Espia",
+            "Espia",
+        ],
+        "misiones": [
+            "3",
+            "2",
+            "3",
+            "2"           
+        ]
+    },    
     5: {
         "afiliacion": [
             "Resistencia",
             "Resistencia",
-            "Resistencia",
+            "Espia",
             "Espia",
             "Espia"
         ],
         "misiones": [
-            "2",
             "3",
             "2",
-            "3",
+            "3#",
+            "4*#",
             "3"            
         ]
     },
@@ -20,16 +34,16 @@ playerSets = {
             "Resistencia",
             "Resistencia",
             "Resistencia",
-            "Resistencia",
+            "Espia",
             "Espia",
             "Espia"
         ],
         "misiones": [
+            "3",
             "2",
-            "3",
-            "4",
-            "3",
-            "4"            
+            "3#",
+            "4*#",
+            "3"            
         ]
     },
     7: {
@@ -37,17 +51,17 @@ playerSets = {
             "Resistencia",
             "Resistencia",
             "Resistencia",
-            "Resistencia",
+            "Espia",
             "Espia",
             "Espia",
             "Espia"
         ],
         "misiones": [
+            "3",
             "2",
-            "3",
-            "3",
-            "4*",
-            "4"            
+            "3#",
+            "4*#",
+            "3"            
         ]
     },
     8: {
@@ -56,17 +70,17 @@ playerSets = {
             "Resistencia",
             "Resistencia",
             "Resistencia",
-            "Resistencia",
+            "Espia",
             "Espia",
             "Espia",
             "Espia"
         ],
         "misiones": [
-            "3",
             "4",
-            "4",
-            "5*",
-            "5"            
+            "3#",
+            "4*#",
+            "5*#",
+            "4"            
         ]
     },
     9: {
@@ -75,18 +89,18 @@ playerSets = {
             "Resistencia",
             "Resistencia",
             "Resistencia",
-            "Resistencia",
-            "Resistencia",
+            "Espia",
+            "Espia",
             "Espia",
             "Espia",
             "Espia"
         ],
         "misiones": [
-            "3",
             "4",
-            "4",
-            "5*",
-            "5"            
+            "3#",
+            "4*#",
+            "5*#",
+            "4"            
         ]
     },
     10: {
@@ -96,18 +110,18 @@ playerSets = {
             "Resistencia",
             "Resistencia",
             "Resistencia",
-            "Resistencia",
+            "Espia",
             "Espia",
             "Espia",
             "Espia",
             "Espia"
         ],
         "misiones": [
-            "3",
             "4",
-            "4",
-            "5*",
-            "5"            
+            "3#",
+            "4*#",
+            "5*#",
+            "4"            
         ]
     },
 }
