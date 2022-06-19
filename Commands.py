@@ -44,7 +44,7 @@ conn = psycopg2.connect(
 
 commands = [  # command description used in the "help" command
     '/help - Te da informacion de los comandos disponibles',
-    '/start - Da un poco de información sobre La Resistencia',
+    '/start - Da un poco de información sobre Quest',
     '/symbols - Te muestra todos los símbolos posibles en el tablero',
     '/rules - Te da un link al sitio oficial con las reglas de Secret Hitler',
     '/newgame - Crea un nuevo juego o carga un juego previo',
@@ -104,7 +104,7 @@ def command_board(update: Update, context: CallbackContext):
 def command_start(update: Update, context: CallbackContext):
 	bot = context.bot
 	cid = update.message.chat_id
-	bot.send_message(cid,"Bot del juego de mesa La Resistencia.")
+	bot.send_message(cid,"Bot del juego de mesa Quest.")
 	command_help(update, context)
 
 
@@ -199,8 +199,8 @@ def command_newgame(update: Update, context: CallbackContext):
 			else:				
 				GamesController.games[cid] = Game(cid, update.message.from_user.id)
 				bot.send_message(cid, "Nuevo juego creado! Cada jugador debe unirse al juego con el comando /join.\nEl iniciador del juego (o el administrador) pueden unirse tambien y escribir /startgame cuando todos se hayan unido al juego!")
-				bot.send_message(cid, "Comenzamos eligiendo los modulos a incluir")
-				MainController.configurar_partida(bot, GamesController.games[cid])
+				# bot.send_message(cid, "Comenzamos eligiendo los modulos a incluir")
+				# MainController.configurar_partida(bot, GamesController.games[cid])
 			
 			
 	except Exception as e:
