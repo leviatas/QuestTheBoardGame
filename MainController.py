@@ -30,6 +30,7 @@ import urllib.parse
 import traceback
 import sys
 
+from html2image import Html2Image
 # Enable logging
 
 log.basicConfig(
@@ -1870,6 +1871,11 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 		
 def main():
+
+	
+
+
+
 	GamesController.init() #Call only once
 	#initialize_testdata()
 
