@@ -12,3 +12,4 @@ class Player(object):
         self.cartas_trama = []
         self.es_el_investigador = False
         self.fue_el_investigador = False
+        self.veteran = False      

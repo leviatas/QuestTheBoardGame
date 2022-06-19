@@ -11,7 +11,14 @@ playerSets = {
             "2",
             "3",
             "2"           
-        ]
+        ],
+        "roles": {
+            "Morgan Le Fey": "Espia",                
+            "Blind Hunter": "Espia",
+            "Loyal Servant of Arthur": "Resistencia",
+            "Cleric": "Resistencia",
+            # "Youth": "Resistencia" # Habilitar y poner random de los 3 G
+        }
     },    
     5: {
         "afiliacion": [
@@ -27,7 +34,15 @@ playerSets = {
             "3#",
             "4*#",
             "3"            
-        ]
+        ],
+        "roles": {
+            "Morgan Le Fey": "Espia",                
+            "Blind Hunter": "Espia",
+            "Minion of Mordred": "Espia",
+            "Loyal Servant of Arthur": "Resistencia",
+            "Cleric": "Resistencia",
+            # "Youth": "Resistencia" # Habilitar y poner random de los 3 G
+        }
     },
     6: {
         "afiliacion": [
@@ -44,7 +59,15 @@ playerSets = {
             "3#",
             "4*#",
             "3"            
-        ]
+        ],
+        "roles": {
+            "Morgan Le Fey": "Espia",                
+            "Blind Hunter": "Espia",
+            "Minion of Mordred": "Espia",
+            "Duke": "Resistencia",
+            "Cleric": "Resistencia",
+            "Youth": "Resistencia" # Youth or Troublemaker random
+        }
     },
     7: {
         "afiliacion": [
@@ -62,7 +85,16 @@ playerSets = {
             "3#",
             "4*#",
             "3"            
-        ]
+        ],
+        "roles": {
+            "Morgan Le Fey": "Espia",                
+            "Blind Hunter": "Espia",
+            "Minion of Mordred": "Espia",
+            "Minion of Mordred": "Espia",
+            "Duke": "Resistencia",
+            "Cleric": "Resistencia",
+            "Youth": "Resistencia" # Youth or Troublemaker random
+        }
     },
     8: {
         "afiliacion": [
@@ -81,7 +113,17 @@ playerSets = {
             "4*#",
             "5*#",
             "4"            
-        ]
+        ],
+        "roles": {
+            "Morgan Le Fey": "Espia",                
+            "Blind Hunter": "Espia",
+            "Minion of Mordred": "Espia",
+            "Minion of Mordred": "Espia",
+            "Loyal Servant of Arthur": "Resistencia",
+            "Duke": "Resistencia",
+            "Cleric": "Resistencia",
+            "Youth": "Resistencia" # Youth or Troublemaker random
+        }
     },
     9: {
         "afiliacion": [
@@ -101,7 +143,18 @@ playerSets = {
             "4*#",
             "5*#",
             "4"            
-        ]
+        ],
+        "roles": {
+            "Morgan Le Fey": "Espia",                
+            "Blind Hunter": "Espia",
+            "Minion of Mordred": "Espia",
+            "Minion of Mordred": "Espia",
+            "Minion of Mordred": "Espia",
+            "Loyal Servant of Arthur": "Resistencia",
+            "Archduke": "Resistencia",
+            "Cleric": "Resistencia",
+            "Youth": "Resistencia" # Youth or Troublemaker random
+        }
     },
     10: {
         "afiliacion": [
@@ -122,7 +175,19 @@ playerSets = {
             "4*#",
             "5*#",
             "4"            
-        ]
+        ],
+        "roles": {
+            "Morgan Le Fey": "Espia",                
+            "Blind Hunter": "Espia",
+            "Minion of Mordred": "Espia",
+            "Minion of Mordred": "Espia",
+            "Minion of Mordred": "Espia",
+            "Loyal Servant of Arthur": "Resistencia",
+            "Duke": "Resistencia",
+            "Archduke": "Resistencia",
+            "Cleric": "Resistencia",
+            "Youth": "Resistencia" # Youth or Troublemaker random
+        }
     },
 }
 
