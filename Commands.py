@@ -183,29 +183,27 @@ def reload_game(bot, game, cid):
 def command_newgame(update: Update, context: CallbackContext):  
 	bot = context.bot
 	cid = update.message.chat_id
+	
+	game = GamesController.games.get(cid, None)
+	groupType = update.message.chat.type
+	if groupType not in ['group', 'supergroup']:
+		bot.send_message(cid, "Tienes que agregarme a un grupo primero y escribir /newgame allá!")
+	elif game:
+		bot.send_message(cid, "Hay un juego comenzado en este chat. Si quieres terminarlo escribe /cancelgame!")
+	else:
 		
-	try:
-		game = GamesController.games.get(cid, None)
-		groupType = update.message.chat.type
-		if groupType not in ['group', 'supergroup']:
-			bot.send_message(cid, "Tienes que agregarme a un grupo primero y escribir /newgame allá!")
-		elif game:
-			bot.send_message(cid, "Hay un juego comenzado en este chat. Si quieres terminarlo escribe /cancelgame!")
-		else:
-			
-			#Search game in DB
-			game = load_game(cid)			
-			if game:
-				reload_game(bot, game, cid)
-			else:				
-				GamesController.games[cid] = Game(cid, update.message.from_user.id)
-				bot.send_message(cid, "Nuevo juego creado! Cada jugador debe unirse al juego con el comando /join.\nEl iniciador del juego (o el administrador) pueden unirse tambien y escribir /startgame cuando todos se hayan unido al juego!")
-				# bot.send_message(cid, "Comenzamos eligiendo los modulos a incluir")
-				# MainController.configurar_partida(bot, GamesController.games[cid])
+		#Search game in DB
+		game = load_game(cid)			
+		if game:
+			reload_game(bot, game, cid)
+		else:				
+			GamesController.games[cid] = Game(cid, update.message.from_user.id)
+			bot.send_message(cid, "Nuevo juego creado! Cada jugador debe unirse al juego con el comando /join.\nEl iniciador del juego (o el administrador) pueden unirse tambien y escribir /startgame cuando todos se hayan unido al juego!")
+			# bot.send_message(cid, "Comenzamos eligiendo los modulos a incluir")
+			# MainController.configurar_partida(bot, GamesController.games[cid])
 			
 			
-	except Exception as e:
-		bot.send_message(cid, str(e))
+	
 
 
 def command_join(update: Update, context: CallbackContext):
