@@ -113,7 +113,8 @@ def command_rules(update: Update, context: CallbackContext):
 	cid = update.message.chat_id
 	btn = [[InlineKeyboardButton("Rules", url="https://en.wikipedia.org/wiki/The_Resistance_(game)")]]
 	rulesMarkup = InlineKeyboardMarkup(btn)
-	bot.send_message(cid, "Lee las reglas oficiales de Quest:", reply_markup=rulesMarkup)
+	# bot.send_message(cid, "Lee las reglas oficiales de Quest:", reply_markup=rulesMarkup)
+	bot.send_message(cid, "Pendiente reglas")
 
 
 # pings the bot
