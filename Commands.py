@@ -290,7 +290,7 @@ def command_startgame(update: Update, context: CallbackContext):
 
 		#Le pongo veterano al primer jugador
 		first_player = game.player_sequence[game.board.state.player_counter]
-		game.set_veterano(first_player.uid)
+		game.set_veteran(first_player.uid)
 
 		MainController.inform_badguys(bot, game, player_number)
 
