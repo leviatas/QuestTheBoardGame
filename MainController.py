@@ -329,7 +329,7 @@ def handle_team_voting(update: Update, context: CallbackContext):
 		if game.is_debugging:
 			for player in game.board.state.equipo:
 				game.board.state.votos_mision[player.uid] = answer
-		game.board.state.votos_mision[player.uid] = answer
+		game.board.state.votos_mision[uid] = answer
 		if len(game.board.state.votos_mision) == game.board.state.equipo_cantidad_mision:
 			game.dateinitvote = None
 			count_mission_votes(bot, game)
