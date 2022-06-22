@@ -172,7 +172,8 @@ def reload_game(bot, game, cid):
 			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)	
 			MainController.inicio_votacion_equipo(bot, game)
 		elif game.board.state.fase_actual == "asignar_equipo":			
-			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)	
+			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+			bot.send_message(cid, f"Hay que asignar los miembros de la mision [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}")
 			MainController.asignar_equipo(bot, game)
 		elif game.board.state.fase_actual == "vote_creadores_opinion":
 			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)

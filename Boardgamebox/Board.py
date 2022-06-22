@@ -7,15 +7,7 @@ class Board(object):
     def __init__(self, playercount, game):
         self.state = State()
         self.num_players = playercount
-        self.misiones = playerSets[self.num_players]["misiones"]
-        
-        # Si hay cartas de trama las incluyo
-        if "Trama" in game.modulos:
-            tempdeck = modules["Trama"]["plot"]["5"]
-            if self.num_players > 6:
-                tempdeck += modules["Trama"]["plot"]["7"]            
-            self.cartastrama = random.sample(tempdeck, len(tempdeck))
-            
+        self.misiones = playerSets[self.num_players]["misiones"]            
         self.discards = []
         self.previous = []
     def print_board(self, player_sequence):
@@ -25,7 +17,9 @@ class Board(object):
             # Pongo la cantidad de miembros por mision como primera fila
             # pongo un espacio extra luego de 4 porque esta el * de mision en casod e mas de 6 jugadores
             if i == 3 and self.num_players > 6:
-                board += " " + str(i+1) + "      "
+                board += "  " + str(i+1) + "      "
+            elif i == 4 and self.num_players > 6:
+                board += "   " + str(i+1) + "      "
             else:        
                 board += " " + str(i+1) + "     "            
             
