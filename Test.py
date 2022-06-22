@@ -16,8 +16,7 @@ file = hti.screenshot(html_str=html, css_str=css, save_as='red_page.png')
 #         # Indica si el jugador tiene el MAGIC TOKEN
 #         self.has_magic_token = False
 #         self.esta_muerto = False        
-#         self.was_investigated = False        
-#         self.es_el_investigador = False
+#         self.was_investigated = False  
 #         self.fue_el_investigador = False
 #         self.veteran = veternano 
 

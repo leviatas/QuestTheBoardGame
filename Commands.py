@@ -285,8 +285,12 @@ def command_startgame(update: Update, context: CallbackContext):
 		# log.info(game.board)
 		# log.info("len(games) Command_startgame: " + str(len(GamesController.games)))
 		game.shuffle_player_sequence()
-		game.board.state.player_counter = 0		
-		
+		game.board.state.player_counter = 0
+
+		#Le pongo veterano al primer jugador
+		first_player = game.game.player_sequence[game.board.state.player_counter]
+		game.set_veterano(first_player.uid)
+
 		MainController.inform_badguys(bot, game, player_number)
 
 		MainController.start_round(bot, game)

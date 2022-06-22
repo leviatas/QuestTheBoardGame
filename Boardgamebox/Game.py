@@ -58,6 +58,35 @@ class Game(object):
 		# Obtengo la lealtad del primer jugador para el clerigo
 		first_player = self.player_sequence[self.board.state.player_counter]
 		return first_player.afiliacion
+
+	def get_no_veteranos_list(self):
+		return [player[1] for player in self.playerlist.items() if player[1].veteran == False]
+
+	def set_veteran(self, uid):
+		self.playerlist[uid].veteran = True
+
+	def is_amulet_turn(self):
+		turno_actual = len(self.board.state.resultado_misiones)
+		return "#" in self.board.misiones[turno_actual]
+
+	# (May not choose a Veteran, Investigator, or the new Leader)
+	def get_posible_amulet_receiver_players(self):
+		return [player[1] for player in self.playerlist.items() if player[1].veteran == False and not player[1].was_investigator]
+
+	def remove_magic_token(self):
+		# Se recorre a todos y se quita a todos por si en futuro hay mas de uno o similar.
+		for uid in self.playerlist:
+			if self.playerlist[uid].has_magic_token:
+				self.playerlist[uid].has_magic_token = False
+
+	def set_flag_investigado_e_investigador(sef, investigado, investigador):
+		investigado.was_investigated = True
+		investigador.was_investigator = True
+
+	def reset_team(self):
+		self.board.state.equipo = []
+		self.board.state.equipo_contador = 0
+		self.board.state.votos_mision = {}
 	def shuffle_player_sequence(self):
 		for uid in self.playerlist:
 			self.player_sequence.append(self.playerlist[uid])
@@ -164,5 +193,5 @@ class Game(object):
 			if self.playerlist[uid].rol == "Cazador Espia":
 				return self.playerlist[uid]
 
-	def get_no_veteranos_list(self):
-		return [player[1] for player in self.playerlist.items() if player[1].veteran == False]
+	
+	

@@ -8,6 +8,6 @@ class Player(object):
         self.has_magic_token = False
         self.esta_muerto = False        
         self.was_investigated = False        
-        self.es_el_investigador = False
+        self.was_investigator = False
         self.fue_el_investigador = False
         self.veteran = False      

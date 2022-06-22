@@ -64,12 +64,13 @@ cur.execute(query)
 ##
 
 def start_round(bot, game):
-	# Comienzo de nuevo turno se resetea el equipo elegido
+	# Nuevo turno se pone fase
 	game.board.state.fase_actual = "comienzo_de_ronda"
-	game.board.state.equipo = []
-	game.board.state.equipo_contador = 0
-	game.board.state.votos_mision = {}
-	
+	# Se resetea el equipo elegido
+	game.reset_team()	
+	# Se le quita el MAGIC TOKEN al jugador/es que lo tenia/n
+	game.remove_magic_token()
+
 	# Modulo Cazador Reseteo el investigador
 	game.board.state.investigador = None
 	game.board.state.investigador_nominado = None
@@ -247,14 +248,32 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 				"menos que su personaje se lo permita!", ParseMode.MARKDOWN)
 			game.playerlist[chosen_uid].has_magic_token = True
 			inicio_votacion_equipo(bot, game)
-
+		# Veteran Token
 		if game.board.state.fase_actual == "asignar_veteran_token":
 			bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
 				+ "VETERAN TOKEN sera el próximo lider!",
 				callback.from_user.id, callback.message.message_id)			
 			bot.send_message(game.cid, f"{miembro_elegido.name} tiene el VETERAN TOKEN será el próximo lider!", ParseMode.MARKDOWN)
 			game.board.state.lider_elegido = miembro_elegido
-			start_next_round(bot, game)
+			# Le pongo el token de veterano para que no pueda ser elegido como lider en el futuro
+			game.set_veteran(miembro_elegido.uid)
+			# Despues de elegir al nuevo lider se da el amuleto si es que hay que entregarlo			
+			if game.is_amulet_turn():
+				jugadores_para_elegir = game.get_posible_amulet_receiver_players()
+				game.board.state.fase_actual == "asignar_veteran_token"
+				texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el AMULET de esta ronda! (El portador podra investigar a alguien)"	
+				texto_menu = "¿A que jugador quieres darle el AMULET?"
+				elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)
+				Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)	
+			else:
+				start_next_round(bot, game)
+		# Amuleto
+		if game.board.state.fase_actual == "asignar_veteran_token":
+			bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el AMULET, ahora tiene que investigar a alguien!",
+				callback.from_user.id, callback.message.message_id)			
+			bot.send_message(game.cid, f"{miembro_elegido.name} tiene el AMULET tiene que investigar a alguien!", ParseMode.MARKDOWN)			
+			menu_investigar_jugador(bot, game, miembro_elegido.uid)
+			
 	except AttributeError as e:
 		log.error("asignar_miembro: Game or board should not be None! Eror: " + str(e))
 	except Exception as e:
@@ -499,13 +518,6 @@ def start_next_round(bot, game):
 	if game.board.state.game_endcode == 0:
 		# start new round
 		sleep(5)
-
-		# Averiguo si algun jugador tiene la carta de Lider Fuerte (Modulo Trama) y le pregunto si quiere usarla
-		if "Trama" in game.modulos:
-			# Veo si algun jugador tiene intencion de usar carta de trama
-			# Si ya se pregunto, o el usuario ya dijo que no la usaria...			
-			if preguntar_intencion_uso_carta(bot, game, "Lider Fuerte 1-Uso", "liderfuerte"):
-				return
 		# if there is no special elected president in between
 		if game.board.state.lider_elegido is None:
 			increment_player_counter(game)
@@ -728,10 +740,11 @@ def menu_investigar_jugador(bot, game, uidinvestigador):
 	log.info('investigar_jugador called')
 	strcid = str(game.cid)
 	btns = []
-	# Le muestro a todos menos el investigador
+	# Le muestro a todos menos el investigador, investigadores pasados e investigados pasados
 	for uid in game.playerlist:
-		if uid != uidinvestigador:
-			name = game.playerlist[uid].name
+		player = game.playerlist[uid]
+		if uid != uidinvestigador and not player.was_investigator and not player.was_investigated:
+			name = player.name
 			btns.append([InlineKeyboardButton(name, callback_data=strcid + "_investigar_" + str(uid))])
 	jugadoresMarkup = InlineKeyboardMarkup(btns)
 	bot.send_message(uidinvestigador, 'Elige al jugador al que quieres investigar!', reply_markup=jugadoresMarkup)
@@ -763,7 +776,8 @@ def investigar_jugador(update: Update, context: CallbackContext):
 		miembro_elegido = game.playerlist[chosen_uid]	
 		bot.edit_message_text("Tú has investigado a %s!" % (miembro_elegido.name),
 				callback.from_user.id, callback.message.message_id)	
-		verificar_cartas_a_entregar(bot, game)
+		# Despues de investigar comienza la nueva ronda		
+		start_next_round(bot, game)
 	except AttributeError as e:
 		log.error("asignar_miembro: Game or board should not be None! Eror: " + str(e))
 	except Exception as e:
@@ -818,7 +832,10 @@ def get_jugadores_adjacentes(game, uidjugador):
 	
 def mostrar_afiliacion(bot, game, uidinvestigador, uidinvestigado):
 	investigado = game.playerlist[uidinvestigado]
-	investigador = game.playerlist[uidinvestigador]	
+	investigador = game.playerlist[uidinvestigador]
+	
+	game.set_flag_investigado_e_investigador(investigado, investigador)
+
 	if game.is_debugging:
 		bot.send_message(ADMIN ,"Has investigado a %s y su afiliación es %s" % (investigado.name, investigado.afiliacion))
 		bot.send_message(game.cid ,"El jugador %s ha investigado a %s" % (investigador.name, investigado.name))
@@ -1072,7 +1089,7 @@ def inform_badguys(bot, game, player_number):
 			# El clerigo conoce la afiliacion del primer jugador
 			if rol == "Cleric":
 				first_player_loyalty = game.get_first_player_loyalty()
-				first_player = game.player_sequence[game.board.state.player_counter]				
+				first_player = game.player_sequence[game.board.state.player_counter]
 				if not game.is_debugging:
 					bot.send_message(uid, f"La afiliación de {first_player.name} es {first_player_loyalty}")
 				else:
@@ -1237,6 +1254,7 @@ def main():
 		  webhook_url="https://questboardgamebot.herokuapp.com/" + TOKEN)
 	# Fin codigo con hooks
 
+	updater.bot.send_message(ADMIN, "Nueva version en linea")
 
 	# Start the Bot
 	# Comentar cuando no se use webhooks
