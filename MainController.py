@@ -75,18 +75,13 @@ def start_round(bot, game):
 	game.board.state.investigador_nominado = None
 	game.board.state.trigger_fin_temprano = False
 	
-	# Variables de Trama	
-	if "Trama" in game.modulos:
-		game.board.state.miembroenelpuntodemira = None
-		game.board.state.enesperadeaccion = {}
-	
 	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround + 1), game)
 	log.info('start_round called')
 		
 	# Starting a new round makes the current round to go up    
 	game.board.state.currentround += 1
-	# Si el lider fue elegido por un evento o jugador... El chosen presidente no sera nulo
-	log.info(game.board.state.lider_elegido)
+
+	# Si el lider fue elegido por un evento o jugador... 
 	if game.board.state.lider_elegido is None:
 		game.board.state.lider_actual = game.player_sequence[game.board.state.player_counter]
 	else:
@@ -99,14 +94,8 @@ def start_round(bot, game):
 	turno_actual = len(game.board.state.resultado_misiones)
 	game.history.append("Ronda %d.%d" % (turno_actual +1, game.board.state.failed_votes + 1))
 	
-	# Si esta el modulo de Trama se reparten cartas de Trama 
-	if "Trama" in game.modulos:
-		# Solo el primer lider de cada ronda (el juego tiene solo 5) reparte cartas.
-		if game.board.state.failed_votes == 0:
-			repartir_cartas_trama(bot, game)
-			return		
 	asignar_equipo(bot, game)
-	# --> nominate_chosen_chancellor --> vote --> handle_voting --> count_votes --> voting_aftermath --> draw_policies
+	# --> asignar_equipo --> asignar_magic_token --> inicio_votacion_equipo
 	# --> choose_policy --> pass_two_policies --> choose_policy --> enact_policy --> start_round
 
 
@@ -258,6 +247,14 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 				"menos que su personaje se lo permita!", ParseMode.MARKDOWN)
 			game.playerlist[chosen_uid].has_magic_token = True
 			inicio_votacion_equipo(bot, game)
+
+		if game.board.state.fase_actual == "asignar_veteran_token":
+			bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
+				+ "VETERAN TOKEN sera el próximo lider!",
+				callback.from_user.id, callback.message.message_id)			
+			bot.send_message(game.cid, f"{miembro_elegido.name} tiene el VETERAN TOKEN será el próximo lider!", ParseMode.MARKDOWN)
+			game.board.state.lider_elegido = miembro_elegido
+			start_next_round(bot, game)
 	except AttributeError as e:
 		log.error("asignar_miembro: Game or board should not be None! Eror: " + str(e))
 	except Exception as e:
@@ -304,12 +301,12 @@ def enviar_votacion_equipo(bot, game, player):
 			# Espias
 			# Si es morgana puede fallar la mision aunque tenga el token
 			if player.rol == "Morgan Le Fey":
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=btns_exito_fracaso)
+				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_exito_fracaso)
 			elif player.has_magic_token:
 				# Si tiene el MAGIC TOKEN debe poner exito en la mision
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=btns_exito)
+				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_exito)
 			else:
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=btns_exito_fracaso)
+				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_exito_fracaso)
 		
 def handle_team_voting(update: Update, context: CallbackContext):
 	bot = context.bot
@@ -393,20 +390,24 @@ def count_mission_votes(bot, game):
 def verify_fin_de_partida(bot, game):
 	if sum(x == 'Exito' for x in game.board.state.resultado_misiones) == 3:
 		# Si hay 3 exitos ganan los buenos y listo
-		finalizo_el_partido = True
 		end_game(bot, game, 1)
+		return
 	elif sum(x == 'Fracaso' for x in game.board.state.resultado_misiones) == 3:	
 		# Si hay 3 fracasos el BLIND HUNTER debe decidir si hace la cazeria o no
 		game.board.state.fase_actual = "blind_hunter_chooses"
 		ask_blind_hunter_about_hunt(bot, game)
-	else:
-		finalizo_el_partido = True
-		end_game(bot, game, -1)		
-	
-			
-	if not finalizo_el_partido:		
-		bot.send_message(game.cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
-		start_next_round(bot, game)
+		Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround + 1), game)
+		return
+		
+	# Si no es el final de la partida pregunto al jugador actual quien sera el proximo lider
+	bot.send_message(game.cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+	 
+	jugadores_no_veteranos = game.get_no_veteranos_list()
+	texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el VETERAN TOKEN para ser el proximo lider!"	
+	game.board.state.fase_actual = "asignar_veteran_token"	
+	texto_menu = "¿A que jugador quieres darle el VETERAN TOKEN para ser el próximo lider?"
+	elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_no_veteranos, game.board.state.lider_actual.uid)
+	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround + 1), game)
 
 def ask_blind_hunter_about_hunt(bot, game):
 	log.info("ask_blind_hunter_about_hunt called")
@@ -1074,9 +1075,10 @@ def inform_badguys(bot, game, player_number):
 	for uid in game.playerlist:
 		afiliacion = game.playerlist[uid].afiliacion
 		rol = game.playerlist[uid].rol
-			
-		if afiliacion == "Espia" and not (rol in ("Espia Ciego", "Agente Oculto")):			
-			badguys = game.get_badguys()
+
+		# El Scion y 	
+		if afiliacion == "Espia" and not (rol in ("Scion", "Changeling", "Blind Hunter")):			
+			badguys = game.get_badguys(rol)
 			fstring = ""
 			for f in badguys:				
 				if f.uid != uid:
@@ -1086,52 +1088,20 @@ def inform_badguys(bot, game, player_number):
 					fstring += ", "
 			fstring = fstring[:-2]
 			if not game.is_debugging:
-				bot.send_message(uid, "Tus compañeros espías son: %s" % fstring)
+				bot.send_message(uid, f"Tus compañeros espías son: {fstring}")
 			else:
-				bot.send_message(ADMIN, "Usuario con rol %s: Los espías son: %s" % (rol, fstring))			
+				bot.send_message(ADMIN, f"Usuario con rol {rol}: Los espías son: {fstring}")			
 		elif afiliacion == "Resistencia":
-			if rol == "Comandante":
-				badguys = game.get_badguys2()
-				fstring = ""
-				for f in badguys:
-					fstring += f.name + ", "
-				fstring = fstring[:-2]
+			# El clerigo conoce la afiliacion del primer jugador
+			if rol == "Cleric":
+				first_player_loyalty = game.get_first_player_loyalty()
+				first_player = game.player_sequence[game.board.state.player_counter]				
 				if not game.is_debugging:
-					bot.send_message(uid, "Los espías son: %s" % fstring)
+					bot.send_message(uid, f"La afiliación de {first_player.name} es {first_player_loyalty}")
 				else:
-					bot.send_message(ADMIN, "Comandante: Los espías son: %s" % fstring)
-			if rol == "Guardaespaldas":	
-				badguys = game.get_comandantes()
-				fstring = ""
-				for f in badguys:
-					fstring += f.name + ", "
-				fstring = fstring[:-2]
-				if not game.is_debugging:
-					bot.send_message(uid, "El/los comandante/s es/son: %s" % fstring)
-				else:
-					bot.send_message(ADMIN, "Guardaespaldas: Los comandantes son: %s" % fstring)	
-			
-			if rol in ("Jefe Resistencia", "Jefe Resistencia 2") and player_number > 7:
-				jefes_resistencia = game.get_jefes_resistencia()
-				fstring = ""
-				for f in jefes_resistencia:
-					if f.uid != uid:
-						fstring += f.name + ", "
-				fstring = fstring[:-2]
-				if not game.is_debugging:
-					bot.send_message(uid, "El otro jefe de la resistencia es: %s" % fstring)
-				else:
-					bot.send_message(ADMIN, "Jefe resistencia: El otro jefe es: %s" % fstring)
-					
-				coordinador = game.get_coordinador()
-				if coordinador:
-					if not game.is_debugging:
-						bot.send_message(uid, "El coordinador es: %s" % coordinador[0].name)
-					else:
-						bot.send_message(ADMIN, "Jefe resistencia: El coordinador es: %s" % coordinador[0].name)
-						
+					bot.send_message(ADMIN, f"Cleric: La afiliación de {first_player.name} es {first_player_loyalty}")			
 		else:
-			log.error("inform_badguys: no se que hacer con la afiliacion: %s" % afiliacion)
+			log.error(f"inform_badguys: no se que hacer con la afiliacion: {afiliacion}")
 
 def increment_player_counter(game):
     log.info('increment_player_counter called')

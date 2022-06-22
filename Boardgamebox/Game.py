@@ -34,13 +34,30 @@ class Game(object):
 				resistencia.append(self.playerlist[uid])
 		return resistencia
 
-	def get_badguys(self):
+	# Lista de espias que se conocen entre ellos
+	def get_badguys(self, rol):
 		espias = []
+		player_number = len(self.playerlist)
 		for uid in self.playerlist:
-			if (self.playerlist[uid].afiliacion == "Espia" and not self.playerlist[uid].rol == "Espia Ciego") or self.playerlist[uid].rol == "Pretendiente":
-				espias.append(self.playerlist[uid])
+			player = self.playerlist[uid]
+			# El changeling no conoce, ni es conocido en ninguna situación
+			if (player.afiliacion == "Espia" and not player.rol == "Changeling"):
+				# El scion es solo conocido por Morgan Le Fey
+				if player.rol == "Scion":
+					if rol == "Morgan Le Fey":
+						espias.append(player)					
+				else:
+					# Para juegos de 6 o más el blind hunter no es conocido por sus compañeros
+					if player.rol == "Blind Hunter" and player_number >= 6:
+						continue
+					else:
+						espias.append(player)
 		return espias
 
+	def get_first_player_loyalty(self):
+		# Obtengo la lealtad del primer jugador para el clerigo
+		first_player = self.player_sequence[self.board.state.player_counter]
+		return first_player.afiliacion
 	def shuffle_player_sequence(self):
 		for uid in self.playerlist:
 			self.player_sequence.append(self.playerlist[uid])
@@ -146,3 +163,6 @@ class Game(object):
 		for uid in self.playerlist:
 			if self.playerlist[uid].rol == "Cazador Espia":
 				return self.playerlist[uid]
+
+	def get_no_veteranos_list(self):
+		return [player[1] for player in self.playerlist.items() if player[1].veteran == False]

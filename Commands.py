@@ -281,14 +281,15 @@ def command_startgame(update: Update, context: CallbackContext):
 	else:
 		player_number = len(game.playerlist)
 		MainController.inform_players(bot, game, game.cid, player_number)
-		MainController.inform_badguys(bot, game, player_number)
+		
 		game.board = Board(player_number, game)
-		log.info(game.board)
-		log.info("len(games) Command_startgame: " + str(len(GamesController.games)))
+		# log.info(game.board)
+		# log.info("len(games) Command_startgame: " + str(len(GamesController.games)))
 		game.shuffle_player_sequence()
 		game.board.state.player_counter = 0		
-		#group_name = update.message.chat.title
-		#bot.send_message(ADMIN, "Game of Secret Hitler started in group %s (%d)" % (group_name, cid))		
+		
+		MainController.inform_badguys(bot, game, player_number)
+
 		MainController.start_round(bot, game)
 		#save_game(cid, groupName, game)
 
