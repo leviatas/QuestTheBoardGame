@@ -170,7 +170,7 @@ def reload_game(bot, game, cid):
 	else:
 		if game.board.state.fase_actual == "conducir_la_mision":
 			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)	
-			MainController.voting_aftermath(bot, game, True)
+			MainController.inicio_votacion_equipo(bot, game)
 		elif game.board.state.fase_actual == "asignar_equipo":			
 			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)	
 			MainController.asignar_equipo(bot, game)
