@@ -1046,7 +1046,7 @@ def inform_players(bot, game, cid, player_number):
 
 def set_roles(bot, game, lista_a_modificar):
 	#copio los roles
-	player_number = str(len(game.playerlist))
+	player_number = len(game.playerlist)
 	for rol, afiliacion in playerSets[player_number]["roles"].items():
 		indice = next((i for i, v in enumerate(lista_a_modificar) if v in afiliacion), -1)
 		if indice == -1:
