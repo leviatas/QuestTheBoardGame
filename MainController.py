@@ -232,7 +232,7 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 	regex = re.search("(-[0-9]*)_elegirjugador_([0-9]*)", callback.data)
 	cid = int(regex.group(1))
 	chosen_uid = int(regex.group(2))
-	game = GamesController.games.get(cid, None)
+	game = Commands.get_game(cid)
 	miembro_elegido = game.playerlist[chosen_uid]
 	# strcid = str(game.cid)
 	log.info(game.board.state.fase_actual)
@@ -540,7 +540,7 @@ def asesinar_miembro(update: Update, context: CallbackContext):
 	cid = int(regex.group(1))
 	chosen_uid = int(regex.group(2))
 
-	game = GamesController.games.get(cid, None)
+	game = Commands.get_game(cid)
 	log.info(chosen_uid)
 	miembro_asesinado = game.playerlist[chosen_uid]			
 	
@@ -562,29 +562,6 @@ def asesinar_miembro(update: Update, context: CallbackContext):
 		bot.send_message(game.uid, text_asesinato)
 		end_game(bot, game, 1)
 	
-
-# Modulo Trama
-def preguntar_intencion_uso_carta(bot, game, nombre_carta, accion_carta):
-	log.info('preguntar_intencion_uso_carta called')
-	result = False
-	game.board.state.fase_actual = "plot_" + nombre_carta
-		
-	strcid = str(game.cid)
-	btns = [[InlineKeyboardButton("Si", callback_data=strcid + ("_%s_" % (accion_carta)) + "Si"), 
-		 InlineKeyboardButton("No", callback_data=strcid + ("_%s_" % (accion_carta)) + "No")]]
-	desicion = InlineKeyboardMarkup(btns)
-	jugadores = ""
-	for uid in game.playerlist:
-		if nombre_carta in game.playerlist[uid].cartas_trama:
-			game.board.state.enesperadeaccion[uid] = nombre_carta
-			bot.send_message(uid, "¿Queres usar la carta: %s?" % (nombre_carta), reply_markup=desicion)
-			jugadores += "[%s](tg://user?id=%d)" % (game.playerlist[uid].name, game.playerlist[uid].uid) + ", "
-			result = True
-	if result:
-		#jugadores = jugadores[:-2]
-		bot.send_message(game.cid, "Los jugadores %scon la carta %s, deben decidir si la usan recuerden que si muchos quieren usarla hay prioridad al más cercano al lider actual" % (jugadores, nombre_carta), ParseMode.MARKDOWN)		
-	
-	return result
 
 # Modulo Trampero
 # Modulo Trama
@@ -687,7 +664,7 @@ def dar_carta_trama(update: Update, context: CallbackContext):
 	chosen_uid = int(regex.group(2))
 
 	try:
-		game = GamesController.games.get(cid, None)
+		game = Commands.get_game(cid)
 		log.info(chosen_uid)
 		miembro_elegido = game.playerlist[chosen_uid]		
 		carta = game.board.state.carta_actual
@@ -781,7 +758,7 @@ def investigar_jugador(update: Update, context: CallbackContext):
 	chosen_uid = int(regex.group(2))
 	caller_uid = callback.from_user.id
 	try:
-		game = GamesController.games.get(cid, None)
+		game = Commands.get_game(cid)
 		mostrar_afiliacion(bot, game, caller_uid, chosen_uid)
 		miembro_elegido = game.playerlist[chosen_uid]	
 		bot.edit_message_text("Tú has investigado a %s!" % (miembro_elegido.name),
@@ -803,7 +780,7 @@ def revelarse_jugador(update: Update, context: CallbackContext):
 	chosen_uid = int(regex.group(2))
 	caller_uid = callback.from_user.id
 	try:
-		game = GamesController.games.get(cid, None)
+		game = Commands.get_game(cid)
 		mostrar_afiliacion(bot, game, chosen_uid, caller_uid)
 		miembro_elegido = game.playerlist[chosen_uid]	
 		bot.edit_message_text("Te has revelado a %s!" % (miembro_elegido.name),
@@ -999,7 +976,7 @@ def showHiddenhistory(cid, bot):
 	#game.pedrote = 3
 	try:
 		#Check if there is a current game		
-		game = GamesController.games.get(cid, None)
+		game = Commands.get_game(cid)
 		history_text = "Historial Oculto:\n\n" 
 		for x in game.hiddenhistory:				
 			history_text += x + "\n\n"
