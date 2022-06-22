@@ -650,3 +650,44 @@ def command_jugadores(update: Update, context: CallbackContext):
 	for uid in game.playerlist:
 		jugadoresActuales += "[%s](tg://user?id=%d)\n" % (game.playerlist[uid].name, uid)
 	bot.send_message(game.cid, jugadoresActuales, ParseMode.MARKDOWN)
+
+def command_hunt(update: Update, context: CallbackContext):
+	#game.pedrote = 3
+	try:
+		#Send message of executing command   
+		bot = context.bot
+		cid = update.message.chat_id
+		#Check if there is a current game
+		game = get_game(cid)
+		if game:
+			uid = update.message.from_user.id
+			if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
+				bot.send_message(cid, "Pendiente hacer con botones, Blind Hunter comenta quien es quien.")
+			else:
+				bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
+		else:
+			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	except Exception as e:
+		bot.send_message(cid, str(e))
+		log.error("Unknown error: " + str(e)) 
+
+def command_good_last_chance(update: Update, context: CallbackContext):
+	#game.pedrote = 3
+	try:
+		#Send message of executing command   
+		bot = context.bot
+		cid = update.message.chat_id
+		
+		#Check if there is a current game
+		game = get_game(cid)
+		if game:
+			uid = update.message.from_user.id
+			if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
+				bot.send_message(cid, "Pendiente hacer con botones, Todos hagan un mensaje programado en X tiempo con quien señalan XD.")
+			else:
+				bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
+		else:
+			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	except Exception as e:
+		bot.send_message(cid, str(e))
+		log.error("Unknown error: " + str(e)) 
