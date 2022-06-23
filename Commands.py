@@ -173,7 +173,7 @@ def reload_game(bot, game, cid):
 			MainController.inicio_votacion_equipo(bot, game)
 		elif game.board.state.fase_actual == "asignar_equipo":			
 			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
-			bot.send_message(cid, f"Hay que asignar los miembros de la mision [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}")
+			bot.send_message(cid, f"Hay que asignar los miembros de la mision [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}", ParseMode.MARKDOWN)
 			MainController.asignar_equipo(bot, game)
 		elif game.board.state.fase_actual == "vote_creadores_opinion":
 			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
@@ -353,17 +353,17 @@ def command_call(update: Update, context: CallbackContext):
 		#Check if there is a current game
 		game = get_game(cid)
 		if game:
+			bot.send_message(cid, text=f"Fase actual {game.board.state.fase_actual}", parse_mode=ParseMode.MARKDOWN)
 			if game.board.state.fase_actual == "conducir_la_mision":
 				history_text = ""
 				for player in game.board.state.equipo:
 					# If the player is not in last_votes send him reminder
 					if player.uid not in game.board.state.votos_mision:
-						history_text += "Debe votar la misión [%s](tg://user?id=%d)!\n" % (game.playerlist[player.uid].name, player.uid)
-				
+						history_text += "Debe votar la misión [%s](tg://user?id=%d)!\n" % (game.playerlist[player.uid].name, player.uid)				
 				bot.send_message(cid, text=history_text, parse_mode=ParseMode.MARKDOWN)
 			elif game.board.state.fase_actual == "asignar_equipo":
 				bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
-				bot.send_message(cid, f"Hay que asignar los miembros de la mision [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}")
+				bot.send_message(cid, f"Hay que asignar los miembros de la mision [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}", ParseMode.MARKDOWN)
 			else:
 				bot.send_message(cid, f"El estado actual {game.board.state.fase_actual} no tiene call", ParseMode.MARKDOWN)
 		else:
