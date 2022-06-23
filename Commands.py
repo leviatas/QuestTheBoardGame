@@ -247,12 +247,12 @@ def command_join(update: Update, context: CallbackContext):
 			bot.send_message(uid, "Te has unido a un juego en %s. Pronto te dire cual es tu rol secreto." % groupName)			 
 			game.add_player(uid, player)
 			log.info("%s (%d) joined a game in %d" % (fname, uid, game.cid))
-			if len(game.playerlist) > 4:
+			if len(game.playerlist) > 3:
 				bot.send_message(game.cid, fname + " se ha unido al juego. Escribe /startgame si este es el último jugador y quieren comenzar con %d jugadores!" % len(game.playerlist))
 			elif len(game.playerlist) == 1:
-				bot.send_message(game.cid, "%s se ha unido al juego. Hay %d jugador en el juego y se necesita 5-10 jugadores." % (fname, len(game.playerlist)))
+				bot.send_message(game.cid, "%s se ha unido al juego. Hay %d jugador en el juego y se necesita 4-10 jugadores." % (fname, len(game.playerlist)))
 			else:
-				bot.send_message(game.cid, "%s se ha unido al juego. Hay %d jugadores en el juego y se necesita 5-10 jugadores" % (fname, len(game.playerlist)))
+				bot.send_message(game.cid, "%s se ha unido al juego. Hay %d jugadores en el juego y se necesita 4-10 jugadores" % (fname, len(game.playerlist)))
 			# Luego dicto los jugadores que se han unido
 			jugadoresActuales = "Los jugadores que se han unido al momento son:\n"
 			for uid in game.playerlist:
@@ -313,38 +313,36 @@ def command_cancelgame(update: Update, context: CallbackContext):
 	else:
 		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
 
-def command_votes(update: Update, context: CallbackContext):
-	try:
-		#Send message of executing command   
-		bot = context.bot
-		cid = update.message.chat_id
-		#bot.send_message(cid, "Looking for history...")
-		#Check if there is a current game 
-		game = get_game(cid)
-		if game:
-			if not game.dateinitvote:
-				# If date of init vote is null, then the voting didnt start          
-				bot.send_message(cid, "La votación no ha comenzado todavia!")
-			else:
-				#If there is a time, compare it and send history of votes.
-				start = game.dateinitvote
-				stop = datetime.now()
-				elapsed = stop - start
-				if elapsed > timedelta(minutes=5):
-					history_text = "Historial de votacion para el Presidente %s y Canciller %s:\n\n" % (game.board.state.nominated_president.name, game.board.state.nominated_chancellor.name)
-					for player in game.player_sequence:
-						# If the player is in the last_votes (He voted), mark him as he registered a vote
-						if player.uid in game.board.state.last_votes:
-							history_text += "%s ha votado.\n" % (game.playerlist[player.uid].name)
-						else:
-							history_text += "%s no ha votado.\n" % (game.playerlist[player.uid].name)
-					bot.send_message(cid, history_text)
-				else:
-					bot.send_message(cid, "Cinco minutos deben pasar para ver los votos") 
+def command_votes(update: Update, context: CallbackContext):	
+	#Send message of executing command   
+	bot = context.bot
+	cid = update.message.chat_id
+	#bot.send_message(cid, "Looking for history...")
+	#Check if there is a current game 
+	game = get_game(cid)
+	if game:
+		if not game.dateinitvote:
+			# If date of init vote is null, then the voting didnt start          
+			bot.send_message(cid, "La votación no ha comenzado todavia!")
 		else:
-			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
-	except Exception as e:
-		bot.send_message(cid, str(e))
+			#If there is a time, compare it and send history of votes.
+			start = game.dateinitvote
+			stop = datetime.now()
+			elapsed = stop - start
+			if elapsed > timedelta(minutes=5):
+				history_text = "Historial de votacion para el Presidente %s y Canciller %s:\n\n" % (game.board.state.nominated_president.name, game.board.state.nominated_chancellor.name)
+				for player in game.player_sequence:
+					# If the player is in the last_votes (He voted), mark him as he registered a vote
+					if player.uid in game.board.state.last_votes:
+						history_text += "%s ha votado.\n" % (game.playerlist[player.uid].name)
+					else:
+						history_text += "%s no ha votado.\n" % (game.playerlist[player.uid].name)
+				bot.send_message(cid, history_text)
+			else:
+				bot.send_message(cid, "Cinco minutos deben pasar para ver los votos") 
+	else:
+		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	
 
 def command_calltovote(update: Update, context: CallbackContext):
 	try:
@@ -387,84 +385,78 @@ def command_calltovote(update: Update, context: CallbackContext):
         
 def command_showhistory(update: Update, context: CallbackContext):
 	#game.pedrote = 3
-	try:
-		#Send message of executing command   
-		bot = context.bot
-		cid = update.message.chat_id
-		#Check if there is a current game
-		game = get_game(cid)
-		if game:		
-			#bot.send_message(cid, "Current round: " + str(game.board.state.currentround + 1))
-			uid = update.message.from_user.id
-			history_text = "Historial:\n\n" 
-			history_textContinue = "" 
-			for x in game.history:
-				if len(history_text) < 3500:
-					history_text += x + "\n\n"
-				else:
-					history_textContinue += x + "\n\n"
+	
+	#Send message of executing command   
+	bot = context.bot
+	cid = update.message.chat_id
+	#Check if there is a current game
+	game = get_game(cid)
+	if game:		
+		#bot.send_message(cid, "Current round: " + str(game.board.state.currentround + 1))
+		uid = update.message.from_user.id
+		history_text = "Historial:\n\n" 
+		history_textContinue = "" 
+		for x in game.history:
+			if len(history_text) < 3500:
+				history_text += x + "\n\n"
+			else:
+				history_textContinue += x + "\n\n"
 
-			bot.send_message(uid, history_text, ParseMode.MARKDOWN)
-			if len(history_textContinue) > 0:
-				bot.send_message(uid, history_textContinue, ParseMode.MARKDOWN)
-			#bot.send_message(cid, "I sent you the history to our private chat")			
-		else:
-			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
-	except Exception as e:
-		bot.send_message(cid, str(e))
-		log.error("Unknown error: " + str(e))  
+		bot.send_message(uid, history_text, ParseMode.MARKDOWN)
+		if len(history_textContinue) > 0:
+			bot.send_message(uid, history_textContinue, ParseMode.MARKDOWN)
+		#bot.send_message(cid, "I sent you the history to our private chat")			
+	else:
+		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	
 
 def command_showmodulos(update: Update, context: CallbackContext):
 	#game.pedrote = 3
-	try:
-		#Send message of executing command   
-		bot = context.bot
-		cid = update.message.chat_id
-		#Check if there is a current game
-		game = get_game(cid)
-		if game:
-			modulos_incluidos = ""
-			for modulo in game.modulos:
-				modulos_incluidos += f"*{modulo}*: {modules[modulo]['descripcion']}\n"
-			bot.send_message(cid, f"Los modulos incluidos en este juego son:\n{modulos_incluidos}", ParseMode.MARKDOWN)	
-		else:
-			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
-	except Exception as e:
-		bot.send_message(cid, str(e))
-		log.error("Unknown error: " + str(e)) 
+	
+	#Send message of executing command   
+	bot = context.bot
+	cid = update.message.chat_id
+	#Check if there is a current game
+	game = get_game(cid)
+	if game:
+		modulos_incluidos = ""
+		for modulo in game.modulos:
+			modulos_incluidos += f"*{modulo}*: {modules[modulo]['descripcion']}\n"
+		bot.send_message(cid, f"Los modulos incluidos en este juego son:\n{modulos_incluidos}", ParseMode.MARKDOWN)	
+	else:
+		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	
 
 def command_claim(update: Update, context: CallbackContext):
 	#game.pedrote = 3
-	try:
-		#Send message of executing command   
-		bot = context.bot
-		cid = update.message.chat_id
-		args = context.args
-		#Check if there is a current game
-		game = get_game(cid)
-		if game:
-			uid = update.message.from_user.id		
-			if uid in game.playerlist:				
-				if game.board.state.currentround != 0:
-					if len(args) > 0:
-						#Data is being claimed
-						claimtext = ' '.join(args)
-						claimtexttohistory = "El jugador %s declara: %s" % (game.playerlist[uid].name, claimtext)
-						bot.send_message(cid, "Tu declaración: %s fue agregada al historial." % (claimtext))
-						game.history.append("*%s*" % (claimtexttohistory))
-					else:					
-						bot.send_message(cid, "Debes mandar un mensaje para hacer una declaración.")
+	
+	#Send message of executing command   
+	bot = context.bot
+	cid = update.message.chat_id
+	args = context.args
+	#Check if there is a current game
+	game = get_game(cid)
+	if game:
+		uid = update.message.from_user.id		
+		if uid in game.playerlist:				
+			if game.board.state.currentround != 0:
+				if len(args) > 0:
+					#Data is being claimed
+					claimtext = ' '.join(args)
+					claimtexttohistory = "El jugador %s declara: %s" % (game.playerlist[uid].name, claimtext)
+					bot.send_message(cid, "Tu declaración: %s fue agregada al historial." % (claimtext))
+					game.history.append("*%s*" % (claimtexttohistory))
+				else:					
+					bot.send_message(cid, "Debes mandar un mensaje para hacer una declaración.")
 
-				else:
-					bot.send_message(cid, "No puedes hacer declaraciones en la primera ronda.")
 			else:
-				bot.send_message(cid, "Debes ser un jugador del partido para declarar algo.")
-				
+				bot.send_message(cid, "No puedes hacer declaraciones en la primera ronda.")
 		else:
-			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
-	except Exception as e:
-		bot.send_message(cid, str(e))
-		log.error("Unknown error: " + str(e))    
+			bot.send_message(cid, "Debes ser un jugador del partido para declarar algo.")
+			
+	else:
+		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	   
 		
 def save_game(cid, groupName, game):
 	#Check if game is in DB first
@@ -580,22 +572,18 @@ def command_nein(update: Update, context: CallbackContext):
 def command_reloadgame(update: Update, context: CallbackContext):  
 	bot = context.bot
 	cid = update.message.chat_id
+	
+	groupType = update.message.chat.type
+	if groupType not in ['group', 'supergroup']:
+		bot.send_message(cid, "Tienes que agregarme a un grupo primero y escribir /reloadgame allá!")		
+	else:			
+		#Search game in DB
+		game = get_game(cid)
+		if game:
+			reload_game(bot, game, cid)
+		else:
+			bot.send_message(cid, "No hay juego que recargar, crea un nuevo juego con /newgame")
 		
-	try:
-		groupType = update.message.chat.type
-		if groupType not in ['group', 'supergroup']:
-			bot.send_message(cid, "Tienes que agregarme a un grupo primero y escribir /reloadgame allá!")		
-		else:			
-			#Search game in DB
-			game = get_game(cid)
-			if game:
-				reload_game(bot, game, cid)
-			else:
-				bot.send_message(cid, "No hay juego que recargar, crea un nuevo juego con /newgame")
-			
-			
-	except Exception as e:
-		bot.send_message(cid, str(e))
 		
 def command_toggle_debugging(update: Update, context: CallbackContext):
 	uid = update.message.from_user.id
@@ -657,41 +645,35 @@ def command_jugadores(update: Update, context: CallbackContext):
 
 def command_hunt(update: Update, context: CallbackContext):
 	#game.pedrote = 3
-	try:
-		#Send message of executing command   
-		bot = context.bot
-		cid = update.message.chat_id
-		#Check if there is a current game
-		game = get_game(cid)
-		if game:
-			uid = update.message.from_user.id
-			if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
-				bot.send_message(cid, "Pendiente hacer con botones, Blind Hunter comenta quien es quien.")
-			else:
-				bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
+	#Send message of executing command   
+	bot = context.bot
+	cid = update.message.chat_id
+	#Check if there is a current game
+	game = get_game(cid)
+	if game:
+		uid = update.message.from_user.id
+		if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
+			bot.send_message(cid, "Pendiente hacer con botones, Blind Hunter comenta quien es quien.")
 		else:
-			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
-	except Exception as e:
-		bot.send_message(cid, str(e))
-		log.error("Unknown error: " + str(e)) 
+			bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
+	else:
+		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	
 
 def command_good_last_chance(update: Update, context: CallbackContext):
-	#game.pedrote = 3
-	try:
-		#Send message of executing command   
-		bot = context.bot
-		cid = update.message.chat_id
-		
-		#Check if there is a current game
-		game = get_game(cid)
-		if game:
-			uid = update.message.from_user.id
-			if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
-				bot.send_message(cid, "Pendiente hacer con botones, Todos hagan un mensaje programado en X tiempo con quien señalan XD.")
-			else:
-				bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
+	#game.pedrote = 3	
+	#Send message of executing command   
+	bot = context.bot
+	cid = update.message.chat_id
+	
+	#Check if there is a current game
+	game = get_game(cid)
+	if game:
+		uid = update.message.from_user.id
+		if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
+			bot.send_message(cid, "Pendiente hacer con botones, Todos hagan un mensaje programado en X tiempo con quien señalan XD.")
 		else:
-			bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
-	except Exception as e:
-		bot.send_message(cid, str(e))
-		log.error("Unknown error: " + str(e)) 
+			bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
+	else:
+		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	

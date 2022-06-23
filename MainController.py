@@ -145,49 +145,43 @@ def asignar_miembro(update: Update, context: CallbackContext):
 	'''if debugging:
 		chosen_uid = ADMIN
 	'''
-	try:
-		game = Commands.get_game(cid)
-		log.info(chosen_uid)
-		
-		if game.board.state.equipo_contador == game.board.state.equipo_cantidad_mision:
-			bot.edit_message_text("Ya has elegido a todos los miembros del equipo!", 
-					      callback.from_user.id, callback.message.message_id)
-			return
-		
-		turno_actual = len(game.board.state.resultado_misiones)		
-		#log.info(game.playerlist)
-		#log.info(str(chosen_uid) in game.playerlist )
-		#log.info(chosen_uid in game.playerlist)        
-		
-		miembro_asignado = game.playerlist[chosen_uid]			
-		
-		log.info("El lider %s (%d) eligio a %s (%d)" % (
-			game.board.state.lider_actual.name, game.board.state.lider_actual.uid,
-			miembro_asignado.name, miembro_asignado.uid))
-		bot.edit_message_text("Tú elegiste a %s para ir a la misión!" % miembro_asignado.name,
-				callback.from_user.id, callback.message.message_id)
-		
-		bot.send_message(game.cid,
-			"El lider %s eligió a %s para ir a la misión!" % (
-			game.board.state.lider_actual.name, miembro_asignado.name))
-		
-		#Agrego uno al contador de Miembros, minimo hay 2 por misión.
-		#Lo agrego al equipo
-		game.board.state.equipo.append(miembro_asignado)
-		game.board.state.equipo_contador += 1
-				
-		# Si se suman la cantidad apropiada de miembros para la mision se vota.
-		if game.board.state.equipo_contador == game.board.state.equipo_cantidad_mision:
-			asignar_magic_token(bot, game)
-		else:
-			#Si no se eligieron todos se le pide que siga eligiendo hasta llegar al cupo. Se pone tiempo para que no se sobrepise
-			asignar_equipo(bot, game)
-		
-	except AttributeError as e:
-		log.error("asignar_miembro: Game or board should not be None! Eror: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
+	game = Commands.get_game(cid)
+	log.info(chosen_uid)
+	
+	if game.board.state.equipo_contador == game.board.state.equipo_cantidad_mision:
+		bot.edit_message_text("Ya has elegido a todos los miembros del equipo!", 
+						callback.from_user.id, callback.message.message_id)
+		return
+	
+	turno_actual = len(game.board.state.resultado_misiones)		
+	#log.info(game.playerlist)
+	#log.info(str(chosen_uid) in game.playerlist )
+	#log.info(chosen_uid in game.playerlist)        
+	
+	miembro_asignado = game.playerlist[chosen_uid]			
+	
+	log.info("El lider %s (%d) eligio a %s (%d)" % (
+		game.board.state.lider_actual.name, game.board.state.lider_actual.uid,
+		miembro_asignado.name, miembro_asignado.uid))
+	bot.edit_message_text("Tú elegiste a %s para ir a la misión!" % miembro_asignado.name,
+			callback.from_user.id, callback.message.message_id)
+	
+	bot.send_message(game.cid,
+		"El lider %s eligió a %s para ir a la misión!" % (
+		game.board.state.lider_actual.name, miembro_asignado.name))
+	
+	#Agrego uno al contador de Miembros, minimo hay 2 por misión.
+	#Lo agrego al equipo
+	game.board.state.equipo.append(miembro_asignado)
+	game.board.state.equipo_contador += 1
+			
+	# Si se suman la cantidad apropiada de miembros para la mision se vota.
+	if game.board.state.equipo_contador == game.board.state.equipo_cantidad_mision:
+		asignar_magic_token(bot, game)
+	else:
+		#Si no se eligieron todos se le pide que siga eligiendo hasta llegar al cupo. Se pone tiempo para que no se sobrepise
+		asignar_equipo(bot, game)		
+	
 
 def asignar_magic_token(bot, game):	
 	jugadores_para_elegir = game.board.state.equipo[:]
@@ -238,48 +232,41 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 	# strcid = str(game.cid)
 	log.info(game.board.state.fase_actual)
 	# Luego hago accion dependiendo de la fase en la que este. 
-	try:
-		# Magic Token		
-		if game.board.state.fase_actual == "asignar_magic_token":			
-			bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
-				+ "MAGIC TOKEN no podra poner fallos a menos que su personaje se lo permita!",
-				callback.from_user.id, callback.message.message_id)			
-			bot.send_message(game.cid, f"{miembro_elegido.name} tiene el MAGIC TOKEN no podra poner fallos a" +
-				"menos que su personaje se lo permita!", ParseMode.MARKDOWN)
-			game.playerlist[chosen_uid].has_magic_token = True
-			inicio_votacion_equipo(bot, game)
-		# Veteran Token
-		if game.board.state.fase_actual == "asignar_veteran_token":
-			bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
-				+ "VETERAN TOKEN sera el próximo lider!",
-				callback.from_user.id, callback.message.message_id)			
-			bot.send_message(game.cid, f"{miembro_elegido.name} tiene el VETERAN TOKEN será el próximo lider!", ParseMode.MARKDOWN)
-			game.board.state.lider_elegido = miembro_elegido
-			# Le pongo el token de veterano para que no pueda ser elegido como lider en el futuro
-			game.set_veteran(miembro_elegido.uid)
-			# Despues de elegir al nuevo lider se da el amuleto si es que hay que entregarlo			
-			if game.is_amulet_turn():
-				jugadores_para_elegir = game.get_posible_amulet_receiver_players()
-				game.board.state.fase_actual == "asignar_veteran_token"
-				texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el AMULET de esta ronda! (El portador podra investigar a alguien)"	
-				texto_menu = "¿A que jugador quieres darle el AMULET?"
-				elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)
-				Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)	
-			else:
-				start_next_round(bot, game)
-		# Amuleto
-		if game.board.state.fase_actual == "asignar_veteran_token":
-			bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el AMULET, ahora tiene que investigar a alguien!",
-				callback.from_user.id, callback.message.message_id)			
-			bot.send_message(game.cid, f"{miembro_elegido.name} tiene el AMULET tiene que investigar a alguien!", ParseMode.MARKDOWN)			
-			menu_investigar_jugador(bot, game, miembro_elegido.uid)
+	# Magic Token		
+	if game.board.state.fase_actual == "asignar_magic_token":			
+		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
+			+ "MAGIC TOKEN no podra poner fallos a menos que su personaje se lo permita!",
+			callback.from_user.id, callback.message.message_id)			
+		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el MAGIC TOKEN no podra poner fallos a " +
+			"menos que su personaje se lo permita!", ParseMode.MARKDOWN)
+		game.playerlist[chosen_uid].has_magic_token = True
+		inicio_votacion_equipo(bot, game)
+	# Veteran Token
+	if game.board.state.fase_actual == "asignar_veteran_token":
+		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
+			+ "VETERAN TOKEN sera el próximo lider!",
+			callback.from_user.id, callback.message.message_id)			
+		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el VETERAN TOKEN será el próximo lider!", ParseMode.MARKDOWN)
+		game.board.state.lider_elegido = miembro_elegido
+		# Le pongo el token de veterano para que no pueda ser elegido como lider en el futuro
+		game.set_veteran(miembro_elegido.uid)
+		# Despues de elegir al nuevo lider se da el amuleto si es que hay que entregarlo			
+		if game.is_amulet_turn():
+			jugadores_para_elegir = game.get_posible_amulet_receiver_players()
+			game.board.state.fase_actual == "asignar_veteran_token"
+			texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el AMULET de esta ronda! (El portador podra investigar a alguien)"	
+			texto_menu = "¿A que jugador quieres darle el AMULET?"
+			elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)
+			Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)	
+		else:
+			start_next_round(bot, game)
+	# Amuleto
+	if game.board.state.fase_actual == "asignar_veteran_token":
+		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el AMULET, ahora tiene que investigar a alguien!",
+			callback.from_user.id, callback.message.message_id)			
+		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el AMULET tiene que investigar a alguien!", ParseMode.MARKDOWN)			
+		menu_investigar_jugador(bot, game, miembro_elegido.uid)
 			
-	except AttributeError as e:
-		log.error("asignar_miembro: Game or board should not be None! Eror: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
-		
 def inicio_votacion_equipo(bot, game):
 	# Pongo para usar el call to vote
 	log.info('inicio_votacion_equipo called')
@@ -334,26 +321,24 @@ def handle_team_voting(update: Update, context: CallbackContext):
 	regex = re.search("(-[0-9]*)_(.*)", callback.data)
 	cid = int(regex.group(1))
 	answer = regex.group(2)
-	try:
-		game = Commands.get_game(cid)
-		uid = callback.from_user.id
-		bot.edit_message_text("Gracias por tu voto!", uid, callback.message.message_id)
-		log.info(f"Jugador {callback.from_user.first_name} ({uid}) voto {answer}")
-							
-		Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)
-		#log.info(len(game.board.state.votos_mision))
-		#log.info(game.board.state.equipo_cantidad_mision)
-		
-		# Pretendo que todos votan juntos de una sola forma.
-		if game.is_debugging:
-			for player in game.board.state.equipo:
-				game.board.state.votos_mision[player.uid] = answer
-		game.board.state.votos_mision[uid] = answer
-		if len(game.board.state.votos_mision) == game.board.state.equipo_cantidad_mision:
-			game.dateinitvote = None
-			count_mission_votes(bot, game)
-	except Exception as e:
-		log.error(str(e))
+	game = Commands.get_game(cid)
+	uid = callback.from_user.id
+	bot.edit_message_text("Gracias por tu voto!", uid, callback.message.message_id)
+	log.info(f"Jugador {callback.from_user.first_name} ({uid}) voto {answer}")
+						
+	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)
+	#log.info(len(game.board.state.votos_mision))
+	#log.info(game.board.state.equipo_cantidad_mision)
+	
+	# Pretendo que todos votan juntos de una sola forma.
+	if game.is_debugging:
+		for player in game.board.state.equipo:
+			game.board.state.votos_mision[player.uid] = answer
+	game.board.state.votos_mision[uid] = answer
+	if len(game.board.state.votos_mision) == game.board.state.equipo_cantidad_mision:
+		game.dateinitvote = None
+		count_mission_votes(bot, game)
+	
 
 def count_mission_votes(bot, game):
 	turno_actual = len(game.board.state.resultado_misiones)
@@ -465,23 +450,21 @@ def respuesta_desencadenante_temprano(update: Update, context: CallbackContext):
 	game = Commands.get_game(cid)		
 	uid = callback.from_user.id
 		
-	try:
-		if not game.board.state.fase_actual == 'preguntar_desencadenante_temprano':
-			bot.edit_message_text("No puedes usar esta accion en este momento!", uid, callback.message.message_id)
-			return				
-		if answer == "Si":
-			game.board.state.fase_actual = "acusacion_temprana_espias_cazador"			
-			cazador_espia = game.get_cazador_espia()
-			restriccion_jugador_a_elegir = [cazador_espia]
-			texto_eleccion = "%s, por favor elige a quien cazar!" % (cazador_espia.name)
-			texto_menu = "¿A que jugador quieres cazar?"
-			elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, restriccion_jugador_a_elegir, cazador_espia.uid)
-		else:
-			#Si no hay acusacion temprana se pasa a la fase de investigacion
-			investigacion_cazador(bot, game)
-			
-	except Exception as e:
-		log.error(str(e))
+	
+	if not game.board.state.fase_actual == 'preguntar_desencadenante_temprano':
+		bot.edit_message_text("No puedes usar esta accion en este momento!", uid, callback.message.message_id)
+		return				
+	if answer == "Si":
+		game.board.state.fase_actual = "acusacion_temprana_espias_cazador"			
+		cazador_espia = game.get_cazador_espia()
+		restriccion_jugador_a_elegir = [cazador_espia]
+		texto_eleccion = "%s, por favor elige a quien cazar!" % (cazador_espia.name)
+		texto_menu = "¿A que jugador quieres cazar?"
+		elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, restriccion_jugador_a_elegir, cazador_espia.uid)
+	else:
+		#Si no hay acusacion temprana se pasa a la fase de investigacion
+		investigacion_cazador(bot, game)
+		
 
 def investigacion_cazador(bot, game):
 	# Veo si el ultimo objeto fue un fracaso o un exito.
@@ -642,29 +625,27 @@ def elegir_jugador_para_dar_carta_de_trama(update: Update, context: CallbackCont
 	cid = int(regex.group(1))
 	answer = regex.group(2)
 	strcid = regex.group(1)
-	try:
-		game = Commands.get_game(cid)
-		uid = callback.from_user.id
-				
-		if not game.board.state.fase_actual == "repartir_cartas_trama":
-			bot.edit_message_text("No es el momento de dar cartas de trama!", uid, callback.message.message_id)
-			return		
-		btns = []
-		game.board.state.carta_actual = answer
-		# Inicialmente se puede elegir a cualquiera para formar los equipos
-		# Menos los que esten en el equipo elegido
-		bot.edit_message_text("Has elegido la carta %s!" % (answer), uid, callback.message.message_id)
-		for uid in game.playerlist:
-			if uid != game.board.state.lider_actual.uid:
-				name = game.playerlist[uid].name
-				btns.append([InlineKeyboardButton(name, callback_data=strcid + "_darcartatrama_" + str(uid))])
-		jugadoresMarkup = InlineKeyboardMarkup(btns)
-		if game.is_debugging:
-			bot.send_message(ADMIN, 'Elige al jugador que le quieres dar la carta %s!' % (game.board.state.carta_actual), reply_markup=jugadoresMarkup)
-		else:
-			bot.send_message(game.board.state.lider_actual.uid, 'Elige al jugador que le quieres dar la carta %s!' % (game.board.state.carta_actual), reply_markup=jugadoresMarkup)
-	except Exception as e:
-		log.error(str(e))
+	game = Commands.get_game(cid)
+	uid = callback.from_user.id
+			
+	if not game.board.state.fase_actual == "repartir_cartas_trama":
+		bot.edit_message_text("No es el momento de dar cartas de trama!", uid, callback.message.message_id)
+		return		
+	btns = []
+	game.board.state.carta_actual = answer
+	# Inicialmente se puede elegir a cualquiera para formar los equipos
+	# Menos los que esten en el equipo elegido
+	bot.edit_message_text("Has elegido la carta %s!" % (answer), uid, callback.message.message_id)
+	for uid in game.playerlist:
+		if uid != game.board.state.lider_actual.uid:
+			name = game.playerlist[uid].name
+			btns.append([InlineKeyboardButton(name, callback_data=strcid + "_darcartatrama_" + str(uid))])
+	jugadoresMarkup = InlineKeyboardMarkup(btns)
+	if game.is_debugging:
+		bot.send_message(ADMIN, 'Elige al jugador que le quieres dar la carta %s!' % (game.board.state.carta_actual), reply_markup=jugadoresMarkup)
+	else:
+		bot.send_message(game.board.state.lider_actual.uid, 'Elige al jugador que le quieres dar la carta %s!' % (game.board.state.carta_actual), reply_markup=jugadoresMarkup)
+	
 		
 def dar_carta_trama(update: Update, context: CallbackContext):
 	bot = context.bot
@@ -675,52 +656,46 @@ def dar_carta_trama(update: Update, context: CallbackContext):
 	cid = int(regex.group(1))
 	chosen_uid = int(regex.group(2))
 
-	try:
-		game = Commands.get_game(cid)
-		log.info(chosen_uid)
-		miembro_elegido = game.playerlist[chosen_uid]		
-		carta = game.board.state.carta_actual
-		
-		log.info("El lider %s (%d) le dio la carta %s a %s (%d)" % (game.board.state.lider_actual.name, game.board.state.lider_actual.uid, carta, miembro_elegido.name, miembro_elegido.uid))
-		bot.edit_message_text("Tú elegiste a %s para la carta %s!" % (miembro_elegido.name, carta),
-				callback.from_user.id, callback.message.message_id)		
-		bot.send_message(game.cid,
-			"El lider %s le dio a %s la carta %s!" % (
-			game.board.state.lider_actual.name, miembro_elegido.name, carta))
-		
-		game.history.append("El lider %s le dio a %s la carta %s!" % (
-			game.board.state.lider_actual.name, miembro_elegido.name, carta))
-				
-		#Agrego uno al contador de Miembros, minimo hay 2 por misión.
-		#Lo agrego al equipo
-				
-		# Si es de 1 uso, se la dejo al jugador en sus cartas disponibles
-		if "1-Uso" in carta:
-			miembro_elegido.cartas_trama.append(carta)		
-		elif "Permanente" in carta:
-			# Actualmente solo hay 1 carta permanente
-			miembro_elegido.creador_de_opinion = True
-			miembro_elegido.cartas_trama.append(carta)
-		elif "Inmediata" in carta:
-			if carta == "Comunicación Intervenida Inmediata":
-				# El jugador que recibe la carte debe investigar un jugador adyacente				
-				menu_investigar_jugador(bot, game, chosen_uid)
-				return
-			if carta == "Compartir Opinión Inmediata":
-				# El jugador tiene que mostrar su carta a un jugador adyacente a él				
-				menu_revelarse_a_jugador(bot, game, chosen_uid)
-				return
-			if carta == "Establecer Confianza Inmediata":
-				# La ejecuto inmediatamente ya que es simplemente mostrar la afiliacion del lider				
-				mostrar_afiliacion(bot, game, chosen_uid, game.board.state.lider_actual.uid)
-				verificar_cartas_a_entregar(bot, game)
-				return
-		verificar_cartas_a_entregar(bot, game)
-	except AttributeError as e:
-		log.error("dar_carta_trama: Game or board should not be None! Eror: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
+	game = Commands.get_game(cid)
+	log.info(chosen_uid)
+	miembro_elegido = game.playerlist[chosen_uid]		
+	carta = game.board.state.carta_actual
+	
+	log.info("El lider %s (%d) le dio la carta %s a %s (%d)" % (game.board.state.lider_actual.name, game.board.state.lider_actual.uid, carta, miembro_elegido.name, miembro_elegido.uid))
+	bot.edit_message_text("Tú elegiste a %s para la carta %s!" % (miembro_elegido.name, carta),
+			callback.from_user.id, callback.message.message_id)		
+	bot.send_message(game.cid,
+		"El lider %s le dio a %s la carta %s!" % (
+		game.board.state.lider_actual.name, miembro_elegido.name, carta))
+	
+	game.history.append("El lider %s le dio a %s la carta %s!" % (
+		game.board.state.lider_actual.name, miembro_elegido.name, carta))
+			
+	#Agrego uno al contador de Miembros, minimo hay 2 por misión.
+	#Lo agrego al equipo
+			
+	# Si es de 1 uso, se la dejo al jugador en sus cartas disponibles
+	if "1-Uso" in carta:
+		miembro_elegido.cartas_trama.append(carta)		
+	elif "Permanente" in carta:
+		# Actualmente solo hay 1 carta permanente
+		miembro_elegido.creador_de_opinion = True
+		miembro_elegido.cartas_trama.append(carta)
+	elif "Inmediata" in carta:
+		if carta == "Comunicación Intervenida Inmediata":
+			# El jugador que recibe la carte debe investigar un jugador adyacente				
+			menu_investigar_jugador(bot, game, chosen_uid)
+			return
+		if carta == "Compartir Opinión Inmediata":
+			# El jugador tiene que mostrar su carta a un jugador adyacente a él				
+			menu_revelarse_a_jugador(bot, game, chosen_uid)
+			return
+		if carta == "Establecer Confianza Inmediata":
+			# La ejecuto inmediatamente ya que es simplemente mostrar la afiliacion del lider				
+			mostrar_afiliacion(bot, game, chosen_uid, game.board.state.lider_actual.uid)
+			verificar_cartas_a_entregar(bot, game)
+			return
+	verificar_cartas_a_entregar(bot, game)	
 
 def verificar_cartas_a_entregar(bot, game):
 	# Remuevo la carta entregada asi se siguen repartiendo las siguientes cartas
@@ -770,19 +745,15 @@ def investigar_jugador(update: Update, context: CallbackContext):
 	cid = int(regex.group(1))
 	chosen_uid = int(regex.group(2))
 	caller_uid = callback.from_user.id
-	try:
-		game = Commands.get_game(cid)
-		mostrar_afiliacion(bot, game, caller_uid, chosen_uid)
-		miembro_elegido = game.playerlist[chosen_uid]	
-		bot.edit_message_text("Tú has investigado a %s!" % (miembro_elegido.name),
-				callback.from_user.id, callback.message.message_id)	
-		# Despues de investigar comienza la nueva ronda		
-		start_next_round(bot, game)
-	except AttributeError as e:
-		log.error("asignar_miembro: Game or board should not be None! Eror: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
+	
+	game = Commands.get_game(cid)
+	mostrar_afiliacion(bot, game, caller_uid, chosen_uid)
+	miembro_elegido = game.playerlist[chosen_uid]	
+	bot.edit_message_text("Tú has investigado a %s!" % (miembro_elegido.name),
+			callback.from_user.id, callback.message.message_id)	
+	# Despues de investigar comienza la nueva ronda		
+	start_next_round(bot, game)
+	
 
 def revelarse_jugador(update: Update, context: CallbackContext):	
 	bot = context.bot
@@ -793,18 +764,14 @@ def revelarse_jugador(update: Update, context: CallbackContext):
 	cid = int(regex.group(1))
 	chosen_uid = int(regex.group(2))
 	caller_uid = callback.from_user.id
-	try:
-		game = Commands.get_game(cid)
-		mostrar_afiliacion(bot, game, chosen_uid, caller_uid)
-		miembro_elegido = game.playerlist[chosen_uid]	
-		bot.edit_message_text("Te has revelado a %s!" % (miembro_elegido.name),
-				callback.from_user.id, callback.message.message_id)
-		verificar_cartas_a_entregar(bot, game)
-	except AttributeError as e:
-		log.error("asignar_miembro: Game or board should not be None! Eror: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
+	
+	game = Commands.get_game(cid)
+	mostrar_afiliacion(bot, game, chosen_uid, caller_uid)
+	miembro_elegido = game.playerlist[chosen_uid]	
+	bot.edit_message_text("Te has revelado a %s!" % (miembro_elegido.name),
+			callback.from_user.id, callback.message.message_id)
+	verificar_cartas_a_entregar(bot, game)
+	
 	
 def get_jugadores_adjacentes(game, uidjugador):
 	indexJugadorRevelado = game.player_sequence.index(game.playerlist[uidjugador])
@@ -852,46 +819,42 @@ def ver_carta_mision(update: Update, context: CallbackContext):
 	cid = int(regex.group(1))
 	chosen_uid = int(regex.group(2))
 	uid = callback.from_user.id
-	try:
-		game = Commands.get_game(cid)
-		turno_actual = len(game.board.state.resultado_misiones)		
-		#log.info(game.playerlist)
-		#log.info(str(chosen_uid) in game.playerlist )
-		#log.info(chosen_uid in game.playerlist)        
-		log.info(chosen_uid)
-		
-		miembro_investigador = game.playerlist[uid]
-		miembro_elegido = game.playerlist[chosen_uid]
-		
-		log.info("El miembro %s (%d) eligio la carta de %s (%d)" % (
-			miembro_investigador.name, miembro_investigador.uid,
-			miembro_elegido.name, miembro_elegido.uid))
-		
-		# Muestro el texto de la carta de mision elegida
-		voto_mision = game.board.state.votos_mision[chosen_uid]
-		
-		bot.edit_message_text("La carta de %s es: %s!" % (miembro_elegido.name, voto_mision),
-				uid, callback.message.message_id)
-		
-		bot.send_message(game.cid,
-			"El miembro %s investigo la carta de %s!" % (
-			miembro_investigador.name, miembro_elegido.name))
-		
-		if game.board.state.fase_actual == "carta_mision_trampero":
-			# En Trampero se remueve el voto de mision que se ve.
-			del game.board.state.votos_mision[chosen_uid]
+	
+	game = Commands.get_game(cid)
+	turno_actual = len(game.board.state.resultado_misiones)		
+	#log.info(game.playerlist)
+	#log.info(str(chosen_uid) in game.playerlist )
+	#log.info(chosen_uid in game.playerlist)        
+	log.info(chosen_uid)
+	
+	miembro_investigador = game.playerlist[uid]
+	miembro_elegido = game.playerlist[chosen_uid]
+	
+	log.info("El miembro %s (%d) eligio la carta de %s (%d)" % (
+		miembro_investigador.name, miembro_investigador.uid,
+		miembro_elegido.name, miembro_elegido.uid))
+	
+	# Muestro el texto de la carta de mision elegida
+	voto_mision = game.board.state.votos_mision[chosen_uid]
+	
+	bot.edit_message_text("La carta de %s es: %s!" % (miembro_elegido.name, voto_mision),
+			uid, callback.message.message_id)
+	
+	bot.send_message(game.cid,
+		"El miembro %s investigo la carta de %s!" % (
+		miembro_investigador.name, miembro_elegido.name))
+	
+	if game.board.state.fase_actual == "carta_mision_trampero":
+		# En Trampero se remueve el voto de mision que se ve.
+		del game.board.state.votos_mision[chosen_uid]
+		count_mission_votes(bot, game)
+	else:			
+		# Si es el de trama
+		game.board.state.enesperadeaccion.pop(uid, None)
+		if not game.board.state.enesperadeaccion:
 			count_mission_votes(bot, game)
-		else:			
-			# Si es el de trama
-			game.board.state.enesperadeaccion.pop(uid, None)
-			if not game.board.state.enesperadeaccion:
-				count_mission_votes(bot, game)
 			
-	except AttributeError as e:
-		log.error("ver_carta_mision: Game or board should not be None! Eror: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
+	
 
 
 		
@@ -938,21 +901,16 @@ def end_game(bot, game, game_endcode):
 
 	
 def configurar_partida(bot, game):
-	try:
 		# Metodo para configurar la partida actual
-		strcid = str(game.cid)			
-		btns = []
-		for modulo in modules.keys():
-			if modulo not in game.modulos:
-				btns.append([InlineKeyboardButton(modulo, callback_data=strcid + "_modulo_" + modulo)])
-		btns.append([InlineKeyboardButton("Finalizar Configuración", callback_data=strcid + "_modulo_" + "Fin")])
-		modulosMarkup = InlineKeyboardMarkup(btns)
-		bot.send_message(game.cid, 'Elija un modulo para agregar!', reply_markup=modulosMarkup)
-	except AttributeError as e:
-		log.error("incluir_modulo: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
+	strcid = str(game.cid)			
+	btns = []
+	for modulo in modules.keys():
+		if modulo not in game.modulos:
+			btns.append([InlineKeyboardButton(modulo, callback_data=strcid + "_modulo_" + modulo)])
+	btns.append([InlineKeyboardButton("Finalizar Configuración", callback_data=strcid + "_modulo_" + "Fin")])
+	modulosMarkup = InlineKeyboardMarkup(btns)
+	bot.send_message(game.cid, 'Elija un modulo para agregar!', reply_markup=modulosMarkup)
+	
 		
 def incluir_modulo(update: Update, context: CallbackContext):
 	bot = context.bot
@@ -970,37 +928,31 @@ def incluir_modulo(update: Update, context: CallbackContext):
 	'''if debugging:
 		chosen_uid = ADMIN
 	'''
-	try:
-		game = Commands.get_game(cid)
-		# Si se ha terminado de configurar los modulos...
-		uid = callback.from_user.id
-		
-		if modulo_elegido == "Fin":
-			bot.edit_message_text("Gracias por configurar el juego, para unirse usar /join y para comenzar presione /startgame", cid, callback.message.message_id)
-		else:
-			game.modulos.append(modulo_elegido)
-			bot.edit_message_text("Se ha incluido el modulo %s" % (modulo_elegido), cid, callback.message.message_id)
-			Commands.save_game(game.cid, "Configuracion", game)
-			configurar_partida(bot, game)
-	except AttributeError as e:
-		log.error("incluir_modulo: " + str(e))
-	except Exception as e:
-		log.error("Unknown error: " + repr(e))
-		log.exception(e)
+	
+	game = Commands.get_game(cid)
+	# Si se ha terminado de configurar los modulos...
+	uid = callback.from_user.id
+	
+	if modulo_elegido == "Fin":
+		bot.edit_message_text("Gracias por configurar el juego, para unirse usar /join y para comenzar presione /startgame", cid, callback.message.message_id)
+	else:
+		game.modulos.append(modulo_elegido)
+		bot.edit_message_text("Se ha incluido el modulo %s" % (modulo_elegido), cid, callback.message.message_id)
+		Commands.save_game(game.cid, "Configuracion", game)
+		configurar_partida(bot, game)
+	
 
 		
 def showHiddenhistory(cid, bot):
 	#game.pedrote = 3
-	try:
-		#Check if there is a current game		
-		game = Commands.get_game(cid)
-		history_text = "Historial Oculto:\n\n" 
-		for x in game.hiddenhistory:				
-			history_text += x + "\n\n"
-		bot.send_message(cid, history_text, ParseMode.MARKDOWN)
-	except Exception as e:
-		bot.send_message(cid, str(e))
-		log.error("Unknown error: " + str(e)) 
+	
+	#Check if there is a current game		
+	game = Commands.get_game(cid)
+	history_text = "Historial Oculto:\n\n" 
+	for x in game.hiddenhistory:				
+		history_text += x + "\n\n"
+	bot.send_message(cid, history_text, ParseMode.MARKDOWN)
+	
         
 def inform_players(bot, game, cid, player_number):
 	log.info('inform_players called')
@@ -1050,18 +1002,20 @@ def set_roles(bot, game, lista_a_modificar):
 			lista_a_modificar[indice] = rol
 			
 def print_player_info(player_number):
-    if player_number == 5:
-        return "Hay 3 miembros de la resistencia y 2 Espias."
-    elif player_number == 6:
-        return "Hay 4 miembros de la resistencia y 2 Espias."
-    elif player_number == 7:
-        return "Hay 4 miembros de la resistencia y 3 Espias."
-    elif player_number == 8:
-        return "Hay 5 miembros de la resistencia y 3 Espias."
-    elif player_number == 9:
-        return "Hay 6 miembros de la resistencia y 3 Espias."
-    elif player_number == 10:
-        return "Hay 6 miembros de la resistencia y 4 Espias."
+	if player_number == 4:
+		return "Hay 2 miembros de la resistencia y 2 Espias."
+	if player_number == 5:
+		return "Hay 2 miembros de la resistencia y 3 Espias."
+	elif player_number == 6:
+		return "Hay 3 miembros de la resistencia y 3 Espias."
+	elif player_number == 7:
+		return "Hay 3 miembros de la resistencia y 4 Espias."
+	elif player_number == 8:
+		return "Hay 4 miembros de la resistencia y 4 Espias."
+	elif player_number == 9:
+		return "Hay 4 miembros de la resistencia y 5 Espias."
+	elif player_number == 10:
+		return "Hay 5 miembros de la resistencia y 5 Espias."
 
 def inform_badguys(bot, game, player_number):
 	log.info('inform_badguys called')
