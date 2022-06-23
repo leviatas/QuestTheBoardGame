@@ -253,7 +253,7 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 		# Despues de elegir al nuevo lider se da el amuleto si es que hay que entregarlo			
 		if game.is_amulet_turn():
 			jugadores_para_elegir = game.get_posible_amulet_receiver_players()
-			game.board.state.fase_actual == "asignar_veteran_token"
+			game.board.state.fase_actual == "asignar_amulet"
 			texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el AMULET de esta ronda! (El portador podra investigar a alguien)"	
 			texto_menu = "¿A que jugador quieres darle el AMULET?"
 			elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)
@@ -261,7 +261,7 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 		else:
 			start_next_round(bot, game)
 	# Amuleto
-	if game.board.state.fase_actual == "asignar_veteran_token":
+	if game.board.state.fase_actual == "asignar_amulet":
 		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el AMULET, ahora tiene que investigar a alguien!",
 			callback.from_user.id, callback.message.message_id)			
 		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el AMULET tiene que investigar a alguien!", ParseMode.MARKDOWN)			

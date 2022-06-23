@@ -66,7 +66,8 @@ class Game(object):
 		self.playerlist[uid].veteran = True
 
 	def is_amulet_turn(self):
-		turno_actual = len(self.board.state.resultado_misiones)
+		# Es -1 porque esto se verifica despues que se puso el resultado de la mision
+		turno_actual = len(self.board.state.resultado_misiones)-1
 		return "#" in self.board.misiones[turno_actual]
 
 	# (May not choose a Veteran, Investigator, or the new Leader)
