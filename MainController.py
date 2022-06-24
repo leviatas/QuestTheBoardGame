@@ -278,7 +278,7 @@ def inicio_votacion_equipo(bot, game):
 
 ### Metodo para enviar la votacion de un jugador
 # El jugador debe elegir Exito o Fallo en la mision
-def enviar_votacion_equipo(bot, game, player):
+def enviar_votacion_equipo(bot, game, player, cambio_voto = False):
 	strcid = str(game.cid)
 	
 	btns_exito = [[InlineKeyboardButton("Exito", callback_data=strcid + "_Exito")]]
@@ -290,29 +290,27 @@ def enviar_votacion_equipo(bot, game, player):
 	btns_fracaso = [[InlineKeyboardButton("Fracaso", callback_data=strcid + "_Fracaso")]]
 	vote_markup_fracaso = InlineKeyboardMarkup(btns_fracaso)	
 	
+	txt_votacion =  "¿Ayudaras en el exito de la misión?" if not cambio_voto else "*¿Cambiarás tu voto?*\n¿Ayudaras en el exito de la misión?"
+
 	if game.is_debugging:
-		btns_todos = [[InlineKeyboardButton("Exito", callback_data=strcid + "_Exito"), 
-				    InlineKeyboardButton("Fracaso", callback_data=strcid + "_Fracaso"), 
-				    InlineKeyboardButton("Fracaso Jefe", callback_data=strcid + "_Fracaso Jefe")]]
-		voteMarkupTodos = InlineKeyboardMarkup(btns_todos)
-		bot.send_message(ADMIN, "¿Ayudaras en el exito de la misión?", reply_markup=voteMarkupTodos)
+		bot.send_message(ADMIN, txt_votacion, reply_markup=vote_markup_exito_fracaso)
 	else:		
 		if player.afiliacion == "Resistencia":
 			# El Youth es una resistencia que si recibe el MAGIC TOKEN debe votar FRACASO
 			if player.rol == "Youth" and player.has_magic_token:
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_fracaso)
+				bot.send_message(player.uid, txt_votacion, reply_markup=vote_markup_fracaso)
 			else:
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_exito)
+				bot.send_message(player.uid, txt_votacion, reply_markup=vote_markup_exito)
 		else:
 			# Espias
 			# Si es morgana puede fallar la mision aunque tenga el token
 			if player.rol == "Morgan Le Fey":
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_exito_fracaso)
+				bot.send_message(player.uid, txt_votacion, reply_markup=vote_markup_exito_fracaso)
 			elif player.has_magic_token:
 				# Si tiene el MAGIC TOKEN debe poner exito en la mision
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_exito)
+				bot.send_message(player.uid, txt_votacion, reply_markup=vote_markup_exito)
 			else:
-				bot.send_message(player.uid, "¿Ayudaras en el exito de la misión?", reply_markup=vote_markup_exito_fracaso)
+				bot.send_message(player.uid, txt_votacion, reply_markup=vote_markup_exito_fracaso)
 		
 def handle_team_voting(update: Update, context: CallbackContext):
 	bot = context.bot
@@ -323,7 +321,7 @@ def handle_team_voting(update: Update, context: CallbackContext):
 	answer = regex.group(2)
 	game = Commands.get_game(cid)
 	uid = callback.from_user.id
-	bot.edit_message_text("Gracias por tu voto!", uid, callback.message.message_id)
+	bot.edit_message_text(f"Gracias por tu voto {answer}", uid, callback.message.message_id)
 	log.info(f"Jugador {callback.from_user.first_name} ({uid}) voto {answer}")
 
 	#log.info(len(game.board.state.votos_mision))
@@ -336,10 +334,14 @@ def handle_team_voting(update: Update, context: CallbackContext):
 	game.board.state.votos_mision[uid] = answer
 
 	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)
-	
+
+	# Si es el ultimo voto, 
 	if len(game.board.state.votos_mision) == game.board.state.equipo_cantidad_mision:
 		game.dateinitvote = None
 		count_mission_votes(bot, game)
+	else:
+		player = game.playerlist[uid]
+		enviar_votacion_equipo(bot, game, player, cambio_voto = True)
 	
 
 def count_mission_votes(bot, game):
