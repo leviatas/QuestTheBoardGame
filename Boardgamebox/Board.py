@@ -10,7 +10,7 @@ class Board(object):
         self.misiones = playerSets[self.num_players]["misiones"]            
         self.discards = []
         self.previous = []
-    def print_board(self, player_sequence):
+    def print_board(self, game):
         board = "--- Misiones ---\n"
         
         for i in range(5):
@@ -38,10 +38,18 @@ class Board(object):
             else:
                 board += u"\u2716\uFE0F" + "  " #X
         
-        board += "\nGuía\n\* Mision que requiere dos fallos\n\# Mision que cuando termina se asigna amuleto de investigación\n"
-        board += "\n--- Orden de turno  ---\n"
-        
-        for player in player_sequence:
+        board += "\nGuía\n\* Mision que requiere dos fallos\n# Mision que cuando termina se asigna amuleto de investigación\n"
+        board += "\n--- Jugadores veteranos  ---\n"
+        for player in game.get_veteranos_list():
+            board += player.name + " "
+        board += "\n--- Jugadores Investigadores ---\n"
+        for player in game.get_investigadores_list():
+            board += player.name + " "
+        board += "\n--- Jugadores Investigados ---\n"
+        for player in game.get_investigados_list():
+            board += player.name + " "            
+        board += "\n"
+        for player in game.player_sequence:
             if self.state.lider_actual == player:
                 board += "*" + player.name + "*" + " " + u"\u27A1\uFE0F" + " "
             else:

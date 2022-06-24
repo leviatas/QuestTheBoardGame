@@ -89,7 +89,7 @@ def start_round(bot, game):
 		game.board.state.lider_actual = game.board.state.lider_elegido
 		game.board.state.lider_elegido = None
 	
-	bot.send_message(game.cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+	bot.send_message(game.cid, game.board.print_board(game), ParseMode.MARKDOWN)
 	bot.send_message(game.cid, "El próximo Lider es [%s](tg://user?id=%d)." % (game.board.state.lider_actual.name, game.board.state.lider_actual.uid), ParseMode.MARKDOWN)
 	
 	turno_actual = len(game.board.state.resultado_misiones)
@@ -126,10 +126,10 @@ def asignar_equipo(bot, game):
 	game.board.state.equipo_cantidad_mision = int((game.board.misiones[turno_actual])[0])
 		
 	if(game.is_debugging):
-		bot.send_message(ADMIN, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(ADMIN, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(ADMIN, 'Por favor nomina a un miembro para la misión!', reply_markup=equipoMarkup)
 	else:
-		bot.send_message(game.board.state.lider_actual.uid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(game.board.state.lider_actual.uid, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(game.board.state.lider_actual.uid, 'Por favor nomina a un miembro para la misión!', reply_markup=equipoMarkup)
 
 	
@@ -209,10 +209,10 @@ def elegir_jugador_general_menu(bot, game, texto_publico, texto_menu, jugadores_
 	elegirjugador = InlineKeyboardMarkup(btns)
 		
 	if(game.is_debugging):
-		bot.send_message(ADMIN, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(ADMIN, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(ADMIN, texto_menu, reply_markup=elegirjugador)
 	else:
-		bot.send_message(id_jugador_eleccion, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(id_jugador_eleccion, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(id_jugador_eleccion, texto_menu, reply_markup=elegirjugador)
 
 	
@@ -242,7 +242,7 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 		game.playerlist[chosen_uid].has_magic_token = True
 		inicio_votacion_equipo(bot, game)
 	# Veteran Token
-	if game.board.state.fase_actual == "asignar_veteran_token":
+	elif game.board.state.fase_actual == "asignar_veteran_token":
 		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
 			+ "*VETERAN TOKEN* sera el próximo lider!",
 			callback.from_user.id, callback.message.message_id)			
@@ -252,21 +252,24 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 		game.set_veteran(miembro_elegido.uid)
 		# Despues de elegir al nuevo lider se da el amuleto si es que hay que entregarlo			
 		if game.is_amulet_turn():
-			jugadores_para_elegir = game.get_posible_amulet_receiver_players()
-			game.board.state.fase_actual == "asignar_amulet"
-			texto_eleccion = f"[{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}), por favor elige a quien darle el *AMULET* de esta ronda! (El portador podra investigar a alguien)"	
-			texto_menu = "¿A que jugador quieres darle el *AMULET*?"
-			elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)
-			Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)	
+			asignar_amulet(bot, game)				
 		else:
 			start_next_round(bot, game)
 	# Amuleto
-	if game.board.state.fase_actual == "asignar_amulet":
+	elif game.board.state.fase_actual == "asignar_amulet":
 		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el *AMULET*, ahora tiene que investigar a alguien!",
 			callback.from_user.id, callback.message.message_id)			
 		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el *AMULET* tiene que investigar a alguien!", ParseMode.MARKDOWN)			
 		menu_investigar_jugador(bot, game, miembro_elegido.uid)
-			
+
+def asignar_amulet(bot, game):
+	jugadores_para_elegir = game.get_posible_amulet_receiver_players()
+	game.board.state.fase_actual == "asignar_amulet"
+	texto_eleccion = f"[{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}), por favor elige a quien darle el *AMULET* de esta ronda! (El portador podra investigar a alguien)"	
+	texto_menu = "¿A que jugador quieres darle el *AMULET*?"
+	elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)
+	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)
+
 def inicio_votacion_equipo(bot, game):
 	# Pongo para usar el call to vote
 	log.info('inicio_votacion_equipo called')
@@ -408,9 +411,11 @@ def verify_fin_de_partida(bot, game):
 		return
 		
 	# Si no es el final de la partida pregunto al jugador actual quien sera el proximo lider
-	bot.send_message(game.cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
-	 
-	jugadores_no_veteranos = game.get_no_veteranos_list()
+	bot.send_message(game.cid, game.board.print_board(game), ParseMode.MARKDOWN)
+	asignar_veteran_token(bot, game)	
+
+def asignar_veteran_token(bot, game):
+	jugadores_no_veteranos = game.get_no_veteranos_no_investigadores_list()
 	texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el *VETERAN TOKEN* para ser el proximo lider!"	
 	game.board.state.fase_actual = "asignar_veteran_token"	
 	texto_menu = "¿A que jugador quieres darle el *VETERAN TOKEN* para ser el próximo lider?"
@@ -577,11 +582,11 @@ def elegir_carta_mision(bot, game, uid):
 	equipoMarkup = InlineKeyboardMarkup(btns)
 	
 	if(game.is_debugging):
-		bot.send_message(ADMIN, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(ADMIN, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(ADMIN, 'Por favor elegi al miembro de la mision al que quieres ver su carta de misión!', reply_markup=equipoMarkup)
 	else:
 		
-		bot.send_message(uid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(uid, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(uid, 'Por favor elegi al miembro de la mision al que quieres ver su carta de misión!', reply_markup=equipoMarkup)
 		
 		
@@ -615,10 +620,10 @@ def elegir_carta_de_trama_a_repartir(bot, game):
 	cartasMarkup = InlineKeyboardMarkup(btns)
 	
 	if(game.is_debugging):
-		bot.send_message(ADMIN, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(ADMIN, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(ADMIN, 'Elige la primera carta a repartir!', reply_markup=cartasMarkup)
 	else:
-		bot.send_message(game.board.state.lider_actual.uid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
+		bot.send_message(game.board.state.lider_actual.uid, game.board.print_board(game), ParseMode.MARKDOWN)
 		bot.send_message(game.board.state.lider_actual.uid, 'Elige una carta para repartir!', reply_markup=cartasMarkup)
 		
 def elegir_jugador_para_dar_carta_de_trama(update: Update, context: CallbackContext):

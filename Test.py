@@ -17,7 +17,7 @@ class Player(object):
         self.fue_el_investigador = False
         self.veteran = veternano 
 
-playerlist = [
+player_secuence = [
     Player("Juan", 1, True),
     Player("Pedro", 2, True),
     Player("Maria", 3, True),
@@ -27,9 +27,9 @@ playerlist = [
     Player("Juan", 7, True),
 ]
 
-print(board.print_board(playerlist))
+print(board.print_board(player_secuence))
 
-
+# player = game.playerlist[uid]
 
 # from html2image import Html2Image
 

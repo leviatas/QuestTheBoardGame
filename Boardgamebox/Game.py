@@ -59,8 +59,17 @@ class Game(object):
 		first_player = self.player_sequence[self.board.state.player_counter]
 		return first_player.afiliacion
 
-	def get_no_veteranos_list(self):
-		return [player[1] for player in self.playerlist.items() if player[1].veteran == False]
+	def get_no_veteranos_no_investigadores_list(self):
+		return [player[1] for player in self.playerlist.items() if not player[1].veteran and not player[1].was_investigator]
+
+	def get_veteranos_list(self):
+		return [player[1] for player in self.playerlist.items() if player[1].veteran]
+
+	def get_investigadores_list(self):
+		return [player[1] for player in self.playerlist.items() if player[1].was_investigator]
+
+	def get_investigados_list(self):
+		return [player[1] for player in self.playerlist.items() if player[1].was_investigated]
 
 	def set_veteran(self, uid):
 		self.playerlist[uid].veteran = True
