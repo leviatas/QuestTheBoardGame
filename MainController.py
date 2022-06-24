@@ -325,8 +325,7 @@ def handle_team_voting(update: Update, context: CallbackContext):
 	uid = callback.from_user.id
 	bot.edit_message_text("Gracias por tu voto!", uid, callback.message.message_id)
 	log.info(f"Jugador {callback.from_user.first_name} ({uid}) voto {answer}")
-						
-	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)
+
 	#log.info(len(game.board.state.votos_mision))
 	#log.info(game.board.state.equipo_cantidad_mision)
 	
@@ -335,6 +334,9 @@ def handle_team_voting(update: Update, context: CallbackContext):
 		for player in game.board.state.equipo:
 			game.board.state.votos_mision[player.uid] = answer
 	game.board.state.votos_mision[uid] = answer
+
+	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)
+	
 	if len(game.board.state.votos_mision) == game.board.state.equipo_cantidad_mision:
 		game.dateinitvote = None
 		count_mission_votes(bot, game)
