@@ -426,7 +426,7 @@ def ask_blind_hunter_about_hunt(bot, game):
 	log.info("ask_blind_hunter_about_hunt called")
 	bot.send_message(game.cid, "El BLIND HUNTER debe decidir si hace la cazeria o no")
 	bot.send_message(game.cid, "Para decidir responda en privado con el comando" + 
-								"/hunt si quiere hacer la cazería o " +
+								" /hunt si quiere hacer la cazería o " +
 								"/good_last_chance para proceder a la fase GOOD LAST CHANCE")
 	bot.send_message(game.cid, "El BLIND HUNTER puede programar el envio del mensaje para no ser evidente")
 

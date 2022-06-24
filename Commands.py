@@ -634,10 +634,9 @@ def command_jugadores(update: Update, context: CallbackContext):
 	bot.send_message(game.cid, jugadoresActuales, ParseMode.MARKDOWN)
 
 def command_hunt(update: Update, context: CallbackContext):
-	#game.pedrote = 3
-	#Send message of executing command   
 	bot = context.bot
-	cid = update.message.chat_id
+	args = context.args
+	cid = (int)(args[0])
 	#Check if there is a current game
 	game = get_game(cid)
 	if game:
@@ -651,11 +650,9 @@ def command_hunt(update: Update, context: CallbackContext):
 	
 
 def command_good_last_chance(update: Update, context: CallbackContext):
-	#game.pedrote = 3	
-	#Send message of executing command   
 	bot = context.bot
-	cid = update.message.chat_id
-	
+	args = context.args
+	cid = (int)(args[0])
 	#Check if there is a current game
 	game = get_game(cid)
 	if game:
