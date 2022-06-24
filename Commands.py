@@ -353,7 +353,7 @@ def command_call(update: Update, context: CallbackContext):
 		#Check if there is a current game
 		game = get_game(cid)
 		if game:
-			bot.send_message(cid, text=f"Fase actual {game.board.state.fase_actual}", parse_mode=ParseMode.MARKDOWN)
+			bot.send_message(cid, text=f"Fase actual {game.board.state.fase_actual}")
 			if game.board.state.fase_actual == "conducir_la_mision":
 				history_text = ""
 				for player in game.board.state.equipo:

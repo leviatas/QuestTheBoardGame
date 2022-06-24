@@ -38,7 +38,7 @@ class Board(object):
             else:
                 board += u"\u2716\uFE0F" + "  " #X
         
-        board += "\nGuía\n* Mision que requiere dos fallos\n# Mision que cuando termina se asigna amuleto de investigación\n"
+        board += "\nGuía\n\* Mision que requiere dos fallos\n\# Mision que cuando termina se asigna amuleto de investigación\n"
         board += "\n--- Orden de turno  ---\n"
         
         for player in player_sequence:
