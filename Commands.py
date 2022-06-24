@@ -641,7 +641,7 @@ def command_hunt(update: Update, context: CallbackContext):
 	game = get_game(cid)
 	if game:
 		uid = update.message.from_user.id
-		if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
+		if uid in game.playerlist and game.playerlist[uid].rol == "Blind Hunter":
 			bot.send_message(cid, "Pendiente hacer con botones, Blind Hunter comenta quien es quien.")
 		else:
 			bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
@@ -657,7 +657,7 @@ def command_good_last_chance(update: Update, context: CallbackContext):
 	game = get_game(cid)
 	if game:
 		uid = update.message.from_user.id
-		if uid in game.playerlist and game.playerlist[uid].role == "Blind Hunter":
+		if uid in game.playerlist and game.playerlist[uid].rol == "Blind Hunter":
 			bot.send_message(cid, "Pendiente hacer con botones, Todos hagan un mensaje programado en X tiempo con quien señalan XD.")
 		else:
 			bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
