@@ -186,7 +186,7 @@ def asignar_miembro(update: Update, context: CallbackContext):
 def asignar_magic_token(bot, game):	
 	jugadores_para_elegir = game.board.state.equipo[:]
 
-	texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el MAGIC TOKEN de esta ronda!"	
+	texto_eleccion = f"[{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}), por favor elige a quien darle el MAGIC TOKEN de esta ronda!"	
 	game.board.state.fase_actual = "asignar_magic_token"	
 	texto_menu = "¿A que jugador quieres darle el MAGIC TOKEN?"
 	elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)		
@@ -244,9 +244,9 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 	# Veteran Token
 	if game.board.state.fase_actual == "asignar_veteran_token":
 		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
-			+ "VETERAN TOKEN sera el próximo lider!",
+			+ "*VETERAN TOKEN* sera el próximo lider!",
 			callback.from_user.id, callback.message.message_id)			
-		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el VETERAN TOKEN será el próximo lider!", ParseMode.MARKDOWN)
+		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el *VETERAN TOKEN* será el próximo lider!", ParseMode.MARKDOWN)
 		game.board.state.lider_elegido = miembro_elegido
 		# Le pongo el token de veterano para que no pueda ser elegido como lider en el futuro
 		game.set_veteran(miembro_elegido.uid)
@@ -254,17 +254,17 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 		if game.is_amulet_turn():
 			jugadores_para_elegir = game.get_posible_amulet_receiver_players()
 			game.board.state.fase_actual == "asignar_amulet"
-			texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el AMULET de esta ronda! (El portador podra investigar a alguien)"	
-			texto_menu = "¿A que jugador quieres darle el AMULET?"
+			texto_eleccion = f"[{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}), por favor elige a quien darle el *AMULET* de esta ronda! (El portador podra investigar a alguien)"	
+			texto_menu = "¿A que jugador quieres darle el *AMULET*?"
 			elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_para_elegir, game.board.state.lider_actual.uid)
 			Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround), game)	
 		else:
 			start_next_round(bot, game)
 	# Amuleto
 	if game.board.state.fase_actual == "asignar_amulet":
-		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el AMULET, ahora tiene que investigar a alguien!",
+		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el *AMULET*, ahora tiene que investigar a alguien!",
 			callback.from_user.id, callback.message.message_id)			
-		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el AMULET tiene que investigar a alguien!", ParseMode.MARKDOWN)			
+		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el *AMULET* tiene que investigar a alguien!", ParseMode.MARKDOWN)			
 		menu_investigar_jugador(bot, game, miembro_elegido.uid)
 			
 def inicio_votacion_equipo(bot, game):
@@ -407,9 +407,9 @@ def verify_fin_de_partida(bot, game):
 	bot.send_message(game.cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
 	 
 	jugadores_no_veteranos = game.get_no_veteranos_list()
-	texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el VETERAN TOKEN para ser el proximo lider!"	
+	texto_eleccion = f"{game.board.state.lider_actual.name}, por favor elige a quien darle el *VETERAN TOKEN* para ser el proximo lider!"	
 	game.board.state.fase_actual = "asignar_veteran_token"	
-	texto_menu = "¿A que jugador quieres darle el VETERAN TOKEN para ser el próximo lider?"
+	texto_menu = "¿A que jugador quieres darle el *VETERAN TOKEN* para ser el próximo lider?"
 	elegir_jugador_general_menu(bot, game, texto_eleccion, texto_menu, jugadores_no_veteranos, game.board.state.lider_actual.uid)
 	Commands.save_game(game.cid, "Saved Round %d" % (game.board.state.currentround + 1), game)
 
