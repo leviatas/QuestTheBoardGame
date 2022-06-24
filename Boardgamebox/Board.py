@@ -36,17 +36,9 @@ class Board(object):
             if resultado == "Exito":
                 board += u"\u2714\uFE0F" + " " #dove
             else:
-                board += u"\u2716\uFE0F" + "  " #X          
-             
-        board += "\n--- Contador de elección ---\n"
+                board += u"\u2716\uFE0F" + "  " #X
         
-        for i in range(5):
-            if i < self.state.failed_votes:
-                board += u"\u2716\uFE0F" + " " #X
-            else:
-                board += u"\u25FB\uFE0F" + " " #empty
-        
-        
+        board += "\nGuía\n* Mision que requiere dos fallos\n# Mision que cuando termina se asigna amuleto de investigación\n"
         board += "\n--- Orden de turno  ---\n"
         
         for player in player_sequence:

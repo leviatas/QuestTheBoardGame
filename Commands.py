@@ -166,7 +166,7 @@ def reload_game(bot, game, cid):
 			MainController.count_votes(bot, game)
 		else:
 			MainController.vote(bot, game)
-			bot.send_message(cid, "Hay una votación en progreso utiliza /calltovote para decirles a los otros jugadores. ")
+			bot.send_message(cid, "Hay una votación en progreso utiliza /call para decirles a los otros jugadores. ")
 	else:
 		if game.board.state.fase_actual == "conducir_la_mision":
 			bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)	
@@ -361,6 +361,8 @@ def command_call(update: Update, context: CallbackContext):
 					if player.uid not in game.board.state.votos_mision:
 						history_text += "Debe votar la misión [%s](tg://user?id=%d)!\n" % (game.playerlist[player.uid].name, player.uid)				
 				bot.send_message(cid, text=history_text, parse_mode=ParseMode.MARKDOWN)
+				for player in game.board.state.equipo:
+					MainController.enviar_votacion_equipo(bot, game, player)
 			elif game.board.state.fase_actual == "asignar_equipo":
 				bot.send_message(cid, game.board.print_board(game.player_sequence), ParseMode.MARKDOWN)
 				bot.send_message(cid, f"Hay que asignar los miembros de la mision [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}", ParseMode.MARKDOWN)
