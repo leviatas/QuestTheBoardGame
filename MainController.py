@@ -1058,7 +1058,7 @@ def inform_badguys(bot, game, player_number):
 				else:
 					bot.send_message(ADMIN, f"Cleric: La afiliación de {first_player.name} es {first_player_loyalty}")			
 		else:
-			bot.send_message(ADMIN, f"inform_badguys: no se que hacer con la afiliacion: {afiliacion}")
+			bot.send_message(ADMIN, f"inform_badguys: no se que hacer con la afiliacion {afiliacion} y rol {rol}")
 
 def increment_player_counter(game):
     log.info('increment_player_counter called')

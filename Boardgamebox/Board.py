@@ -34,9 +34,9 @@ class Board(object):
         
         for resultado in self.state.resultado_misiones :
             if resultado == "Exito":
-                board += u"\u2714\uFE0F" + " " #dove
+                board += u"\u2714\uFE0F" + "   " #dove
             else:
-                board += u"\u2716\uFE0F" + "  " #X
+                board += u"\u2716\uFE0F" + "     " #X
         
         board += "\nGuía\n\* Mision que requiere dos fallos\n# Mision que cuando termina se asigna amuleto de investigación\n"
         board += "\n--- Jugadores veteranos  ---\n"
