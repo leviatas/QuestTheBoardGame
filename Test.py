@@ -1,33 +1,55 @@
-from Boardgamebox.Board import Board
+from functools import wraps
 
-board = Board(7, None)
+def validate_action(fase):
+    def wrap(func):
+        @wraps(func)
+        def wrapped(update, context, *args, **kwargs):            
+            if update == fase:
+                print(f"Accion en fase incorrecta: {fase}")
+                return
+            return func(update, context, *args, **kwargs)
+        return wrapped
+    return wrap
 
-board.state.resultado_misiones = ["Exsito", "Esxito", "Exsito", "sxito", "Esxito"]
-class Player(object):
-    def __init__(self, name, uid, veternano):
-        self.name = name
-        self.uid = uid
-        self.rol = None
-        self.afiliacion = None
-        # Indica si el jugador tiene el MAGIC TOKEN
-        self.has_magic_token = False
-        self.esta_muerto = False        
-        self.was_investigated = False        
-        self.es_el_investigador = False
-        self.fue_el_investigador = False
-        self.veteran = veternano 
+@validate_action("Fase")
+def accion(update, context):
+    print("Se realiza la accion")
 
-player_secuence = [
-    Player("Juan", 1, True),
-    Player("Pedro", 2, True),
-    Player("Maria", 3, True),
-    Player("Juan", 4, True),
-    Player("Pedro", 5, True),
-    Player("Maria", 6, True),
-    Player("Juan", 7, True),
-]
 
-print(board.print_board(player_secuence))
+accion("Fase", "context")
+# Utils and decorators
+
+
+# from Boardgamebox.Board import Board
+
+# board = Board(7, None)
+
+# board.state.resultado_misiones = ["Exsito", "Esxito", "Exsito", "sxito", "Esxito"]
+# class Player(object):
+#     def __init__(self, name, uid, veternano):
+#         self.name = name
+#         self.uid = uid
+#         self.rol = None
+#         self.afiliacion = None
+#         # Indica si el jugador tiene el MAGIC TOKEN
+#         self.has_magic_token = False
+#         self.esta_muerto = False        
+#         self.was_investigated = False        
+#         self.es_el_investigador = False
+#         self.fue_el_investigador = False
+#         self.veteran = veternano 
+
+# player_secuence = [
+#     Player("Juan", 1, True),
+#     Player("Pedro", 2, True),
+#     Player("Maria", 3, True),
+#     Player("Juan", 4, True),
+#     Player("Pedro", 5, True),
+#     Player("Maria", 6, True),
+#     Player("Juan", 7, True),
+# ]
+
+# print(board.print_board(player_secuence))
 
 # player = game.playerlist[uid]
 

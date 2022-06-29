@@ -13,7 +13,7 @@ from time import sleep
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 from telegram.ext import (Updater, CommandHandler, CallbackQueryHandler, CallbackContext)
 from telegram.utils.helpers import mention_html
-
+from functools import wraps
 import Commands
 from Constants.Cards import playerSets
 from Constants.Config import STATS, ADMIN
@@ -31,6 +31,8 @@ import traceback
 import sys
 
 from html2image import Html2Image
+
+from Utils import validate_action
 # Enable logging
 
 log.basicConfig(
@@ -251,7 +253,7 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
 			+ "*VETERAN TOKEN* sera el próximo lider!",
 			callback.from_user.id, callback.message.message_id)			
-		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el *VETERAN TOKEN* será el próximo lider!", ParseMode.MARKDOWN)
+		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el *VETERAN TOKEN* será el próximo lider!", ParseMode.MARKDOWN)		
 		game.board.state.lider_elegido = miembro_elegido
 		# Le pongo el token de veterano para que no pueda ser elegido como lider en el futuro
 		game.set_veteran(miembro_elegido.uid)
@@ -319,7 +321,9 @@ def enviar_votacion_equipo(bot, game, player, cambio_voto = False):
 				bot.send_message(player.uid, txt_votacion, reply_markup=vote_markup_exito)
 			else:
 				bot.send_message(player.uid, txt_votacion, reply_markup=vote_markup_exito_fracaso)
-		
+
+# Se valida que la accion sea correcta en la fase correcta
+@validate_action("conducir_la_mision")
 def handle_team_voting(update: Update, context: CallbackContext):
 	bot = context.bot
 	callback = update.callback_query
@@ -1082,6 +1086,9 @@ def shuffle_policy_pile(bot, game):
         game.board.discards = []
         bot.send_message(game.cid,
                          "No habia cartas suficientes en el mazo de políticas asi que he mezclado el resto con el mazo de descarte!")
+
+
+
 
 
 def error(update, context):
