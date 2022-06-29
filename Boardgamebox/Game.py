@@ -203,5 +203,11 @@ class Game(object):
 			if self.playerlist[uid].rol == "Cazador Espia":
 				return self.playerlist[uid]
 
+	def increment_player_counter(self):
+		if self.board.state.player_counter < len(self.player_sequence) - 1:
+			self.board.state.player_counter += 1
+		else:
+			self.board.state.player_counter = 0
+
 	
 	

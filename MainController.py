@@ -521,7 +521,7 @@ def start_next_round(bot, game):
 		sleep(5)
 		# if there is no special elected president in between
 		if game.board.state.lider_elegido is None:
-			increment_player_counter(game)
+			game.increment_player_counter()
 		start_round(bot, game)
 		
 #Comienzan metodos de expansiones
@@ -1068,24 +1068,6 @@ def inform_badguys(bot, game, player_number):
 					bot.send_message(ADMIN, f"Cleric: La afiliación de {first_player.name} es {first_player_loyalty}")			
 		else:
 			bot.send_message(ADMIN, f"inform_badguys: no se que hacer con la afiliacion {afiliacion} y rol {rol}")
-
-def increment_player_counter(game):
-    log.info('increment_player_counter called')
-    if game.board.state.player_counter < len(game.player_sequence) - 1:
-        game.board.state.player_counter += 1
-    else:
-        game.board.state.player_counter = 0
-
-
-def shuffle_policy_pile(bot, game):
-    log.info('shuffle_policy_pile called')
-    if len(game.board.policies) < 3:
-        game.history[game.board.state.currentround] += "\n\nNo habia cartas suficientes en el mazo de políticas asi que he mezclado el resto con el mazo de descarte!"
-        game.board.discards += game.board.policies
-        game.board.policies = random.sample(game.board.discards, len(game.board.discards))
-        game.board.discards = []
-        bot.send_message(game.cid,
-                         "No habia cartas suficientes en el mazo de políticas asi que he mezclado el resto con el mazo de descarte!")
 
 
 

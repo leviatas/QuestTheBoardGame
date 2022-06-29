@@ -380,3 +380,26 @@ def simple_choose_buttons_only_buttons(bot, cid, uid, comando_callback, opciones
 		#	bot.send_message(ADMIN[0], datos)
 		btns.append([InlineKeyboardButton(txtBoton, callback_data=datos)])
 	return InlineKeyboardMarkup(btns)
+
+def LoadAllGames():
+	games = None
+	conn = psycopg2.connect(
+		database=url.path[1:],
+		user=url.username,
+		password=url.password,
+		host=url.hostname,
+		port=url.port
+	)
+	cursor = conn.cursor()			
+	log.info("Executing in DB")
+	query = "select * from games g"	
+	cursor.execute(query)
+	if cursor.rowcount > 0:
+		# Si encuentro juegos los busco a todos y los cargo en memoria
+		for table in cursor.fetchall():
+			id = table[0]
+			if id not in GamesController.games.keys():
+				get_game(table[0])
+		games = GamesController.games
+		conn.close()
+	return games

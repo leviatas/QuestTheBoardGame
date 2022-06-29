@@ -23,6 +23,8 @@ from Constants.Config import ADMIN
 from collections import namedtuple
 from datetime import datetime
 from datetime import timedelta
+
+from Utils import LoadAllGames
 # Enable logging
 
 log.basicConfig(
@@ -635,19 +637,37 @@ def command_jugadores(update: Update, context: CallbackContext):
 
 def command_hunt(update: Update, context: CallbackContext):
 	bot = context.bot
-	args = context.args
-	cid = (int)(args[0])
-	#Check if there is a current game
-	game = get_game(cid)
-	if game:
-		uid = update.message.from_user.id
-		if uid in game.playerlist and game.playerlist[uid].rol == "Blind Hunter":
-			bot.send_message(cid, "Pendiente hacer con botones, Blind Hunter comenta quien es quien.")
-		else:
-			bot.send_message(cid, f"{update.message.from_user.first_name} no tiene el rol de Blind Hunter.")
-	else:
-		bot.send_message(cid, "No hay juego en este chat. Crea un nuevo juego con /newgame")
+	uid = update.message.from_user.id
+	# Obtengo todos los juegos que estan en la DB
+	all_games_unfiltered = LoadAllGames()
+	#Busca los juegos en que soy el blind hunter
+	all_games_filtered = {key:game for key, game in all_games_unfiltered.items() if uid in game.playerlist and game.board != None and game.playerlist[uid].rol == "Blind Hunter" }
 	
+	if len(all_games_filtered) == 0:
+		bot.send_message(uid, "No estas en ningun juego con el rol de Blind Hunter")
+	else:
+		# Si hay juegos en los que soy el blind hunter, los muestro
+		for game_chat_id, game in all_games_filtered.items():
+			bot.send_message(game_chat_id, "Pendiente hacer con botones, Blind Hunter comenta quien es quien.")
+
+def command_myturn(update: Update, context: CallbackContext):
+	bot = context.bot
+	uid = update.message.from_user.id
+	
+	# Independeinte de si pide todos, tengo que obtenerlos a todos para saber cual es el de menos tiempo.
+	all_games_unfiltered = MainController.getGamesByTipo("Todos")	
+	# Me improtan los juegos que; Este el jugador, hayan sido iniciados, datinivote no sea null y que cumpla reglas del tipo de juego en particular
+	all_games = {key:game for key, game in all_games_unfiltered.items() if uid in game.playerlist and game.board != None and verify_my_turn(game, uid) }
+	
+	# Le recuerdo solo el juego que mas tiempo lo viene esperando		
+	#chat_id = min(all_games, key=lambda key: all_games[key].dateinitvote)
+	try:
+		chat_id = min(all_games, key=lambda key: datetime.datetime.now() if all_games[key].dateinitvote == None else all_games[key].dateinitvote)
+		game_pendiente = all_games[chat_id]
+		bot.send_message(uid, myturn_message(bot, game_pendiente , uid), ParseMode.MARKDOWN)
+	except Exception:
+		bot.send_message(uid, "*NO* tienes partidos pendientes", ParseMode.MARKDOWN)
+		#ot.send_message(ADMIN[0], str(e))
 
 def command_good_last_chance(update: Update, context: CallbackContext):
 	bot = context.bot
