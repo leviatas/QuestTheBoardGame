@@ -20,7 +20,6 @@ log.basicConfig(
 logger = log.getLogger(__name__)
 
 urllib.parse.uses_netloc.append("postgres")
-#url = urllib.parse.urlparse('postgres://osawfnidytbmgi:126714f9f3157ee10baa8046e48d287872788c8d1349ddba5dfd2a85de82d2a6@ec2-174-129-192-200.compute-1.amazonaws.com:5432/d79l0ugjdnfiac')
 url = urllib.parse.urlparse(os.environ["DATABASE_URL"])
 
 # Utils and decorators
