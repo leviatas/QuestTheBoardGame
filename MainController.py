@@ -180,7 +180,7 @@ def asignar_miembro(update: Update, context: CallbackContext):
 	# Si se suman la cantidad apropiada de miembros para la mision se vota.
 	if game.board.state.equipo_contador == game.board.state.equipo_cantidad_mision:
 		# SE avisa que el equipo esta compuesto exitosamente y se graba en historial
-		voting_text += f"\nFelicitaciones al equipo de [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}) compuesto por:\n{game.get_equipo_actual(True)}"		
+		voting_text = f"\nFelicitaciones al equipo de [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}) compuesto por:\n{game.get_equipo_actual(True)}"		
 		game.history.append(voting_text)
 		bot.send_message(cid, voting_text, ParseMode.MARKDOWN)
 		asignar_magic_token(bot, game)
