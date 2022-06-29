@@ -177,6 +177,10 @@ def asignar_miembro(update: Update, context: CallbackContext):
 			
 	# Si se suman la cantidad apropiada de miembros para la mision se vota.
 	if game.board.state.equipo_contador == game.board.state.equipo_cantidad_mision:
+		# SE avisa que el equipo esta compuesto exitosamente y se graba en historial
+		voting_text += f"\nFelicitaciones al equipo de [{game.board.state.lider_actual.name}](tg://user?id={game.board.state.lider_actual.uid}) compuesto por:\n{game.get_equipo_actual(True)}"		
+		game.history.append(voting_text)
+		bot.send_message(cid, voting_text, ParseMode.MARKDOWN)
 		asignar_magic_token(bot, game)
 	else:
 		#Si no se eligieron todos se le pide que siga eligiendo hasta llegar al cupo. Se pone tiempo para que no se sobrepise
@@ -237,8 +241,9 @@ def elegir_jugador_general(update: Update, context: CallbackContext):
 		bot.edit_message_text(f"Elegiste a {miembro_elegido.name} para que tenga el " 
 			+ "MAGIC TOKEN no podra poner fallos a menos que su personaje se lo permita!",
 			callback.from_user.id, callback.message.message_id)			
-		bot.send_message(game.cid, f"{miembro_elegido.name} tiene el MAGIC TOKEN no podra poner fallos a " +
-			"menos que su personaje se lo permita!", ParseMode.MARKDOWN)
+		magic_token_msg =  f"{miembro_elegido.name} tiene el MAGIC TOKEN no podra poner fallos a menos que su personaje se lo permita!"
+		bot.send_message(game.cid, magic_token_msg, ParseMode.MARKDOWN)		
+		game.history.append(magic_token_msg)
 		game.playerlist[chosen_uid].has_magic_token = True
 		inicio_votacion_equipo(bot, game)
 	# Veteran Token
@@ -275,7 +280,7 @@ def inicio_votacion_equipo(bot, game):
 	log.info('inicio_votacion_equipo called')
 	game.dateinitvote = datetime.datetime.now()
 	game.board.state.fase_actual = "conducir_la_mision"
-	
+	Commands.save_game(game.cid, f"Saved Round {game.board.state.currentround}. Fase {game.board.state.fase_actual}", game)
 	for player in game.board.state.equipo:
 		enviar_votacion_equipo(bot, game, player)
 
